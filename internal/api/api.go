@@ -50,6 +50,9 @@ type ServerInterface interface {
 	// (PUT /user/{user-id})
 	PutUserUserId(c *gin.Context, userId int)
 
+	// (GET /user/{user-id}/spaces)
+	GetUserUserIdSpaces(c *gin.Context, userId int)
+
 	// (GET /users/)
 	GetUsers(c *gin.Context)
 
@@ -327,6 +330,32 @@ func (siw *ServerInterfaceWrapper) PutUserUserId(c *gin.Context) {
 	siw.Handler.PutUserUserId(c, userId)
 }
 
+// GetUserUserIdSpaces operation middleware
+func (siw *ServerInterfaceWrapper) GetUserUserIdSpaces(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "user-id" -------------
+	var userId int
+
+	err = runtime.BindStyledParameter("simple", false, "user-id", c.Param("user-id"), &userId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter user-id: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(CookieAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetUserUserIdSpaces(c, userId)
+}
+
 // GetUsers operation middleware
 func (siw *ServerInterfaceWrapper) GetUsers(c *gin.Context) {
 
@@ -437,6 +466,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/user/:user-id", wrapper.DeleteUserUserId)
 	router.GET(options.BaseURL+"/user/:user-id", wrapper.GetUserUserId)
 	router.PUT(options.BaseURL+"/user/:user-id", wrapper.PutUserUserId)
+	router.GET(options.BaseURL+"/user/:user-id/spaces", wrapper.GetUserUserIdSpaces)
 	router.GET(options.BaseURL+"/users/", wrapper.GetUsers)
 	router.GET(options.BaseURL+"/webhooks/", wrapper.GetWebhooks)
 	router.POST(options.BaseURL+"/webhooks/", wrapper.PostWebhooks)

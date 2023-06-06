@@ -129,6 +129,26 @@ paths:
       tags:
         - "User"
 
+  /user/{user-id}/spaces:
+    parameters:
+      - name: user-id
+        in: path
+        description: ID parameter
+        required: true
+        schema:
+          type: integer
+    get:
+      tags:
+        - "User"
+      responses:
+        '200':
+          description: A list of Spaces the user have access.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpaceAccess'
 
   # Space
   /spaces/:
@@ -256,17 +276,28 @@ components:
     User:
       type: object
       properties:
+        id:
+          type: integer
         name:
           type: string
         email:
           type: string
-        role:
-          type: string
+        instanceAdmin:
+          type: boolean
+        origin:
+          type: boolean
     Password:
       type: object
       properties:
         password:
           type: string
+    SpaceAccess:
+      type: object
+      properties:
+        spaceID:
+          type: integer
+        admin:
+          type: boolean
     Space:
       type: object
       properties:

@@ -55,6 +55,11 @@ func (s *Server) PutUserUserId(c *gin.Context, userId int) {
 	c.AbortWithStatus(http.StatusNotImplemented)
 }
 
+func (s *Server) GetUserUserIdSpaces(c *gin.Context, userId int) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (s *Server) GetUsers(c *gin.Context) {
 	c.AbortWithStatus(http.StatusNotImplemented)
 }

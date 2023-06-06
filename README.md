@@ -3,7 +3,7 @@
 ## Code generation
 
 ````bash
-go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.13.0 -generate gin -package api -o api.go api.yaml
+go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.13.0 -generate gin -package api -o internal/api/api.go api.yaml
 ````
 
 ## Redoc
