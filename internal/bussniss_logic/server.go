@@ -1,11 +1,14 @@
 package bussniss_logic
 
 import (
+	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-type Server struct{}
+type Server struct {
+	DB db.DataBase
+}
 
 func (s *Server) GetLogin(c *gin.Context) {
 	c.AbortWithStatus(http.StatusNotImplemented)
