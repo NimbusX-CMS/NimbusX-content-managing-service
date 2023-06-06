@@ -43,9 +43,9 @@ paths:
               type: object
               properties:
                 email:
-                  type: [ string ]
+                  type: string
                 password:
-                  type: [ string ]
+                  type: string
       responses:
         '200':
           description: Returns a valid session key
@@ -55,13 +55,13 @@ paths:
                 type: object
                 properties:
                   session:
-                    type: [ string ]
+                    type: string
 
   # User
-  /password:
+  /password/{token}:
     parameters:
       - name: token
-        in: query
+        in: path
         description: a unique token, which is send to the user via email (included in the reset password link)
         required: true
         schema:
@@ -102,7 +102,7 @@ paths:
   /user/{user-id}:
     parameters:
       - name: user-id
-        in: query
+        in: path
         description: ID parameter
         required: true
         schema:
@@ -151,7 +151,7 @@ paths:
   /space/{space-id}:
     parameters:
       - name: space-id
-        in: query
+        in: path
         description: ID parameter
         required: true
         schema:
@@ -210,20 +210,19 @@ paths:
     put:
       tags:
         - "Webhooks"
-
+      parameters:
+        - name: name
+          in: path
+          description: Name of the webhook
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
             schema:
               type: object
               $ref: '#/components/schemas/Webhook'
-      parameters:
-        - name: name
-          in: query
-          description: Name of the webhook
-          required: true
-          schema:
-            type: string
       responses:
         200:
           description: Update successfully a webhook.
@@ -236,73 +235,68 @@ paths:
 components:
   schemas:
     ContentType:
-      type:
-        - object
+      type: object
       properties:
         name:
-          type: [ string ]
+          type: string
         stage:
-          type: [ string ]
+          type: string
         multiLanguage:
-          type: [ boolean ]
+          type: boolean
         singleType:
-          type: [ boolean ]
+          type: boolean
         allowedMethods:
-          type: [ array ]
+          type: array
           items:
             type: string
         fields:
-          type: [ array ]
+          type: array
           items:
             type: string
     User:
-      type:
-        - object
+      type: object
       properties:
         name:
-          type: [ string ]
+          type: string
         email:
-          type: [ string ]
+          type: string
         role:
-          type: [ string ]
+          type: string
     Password:
-      type:
-        - object
+      type: object
       properties:
         password:
-          type: [ string ]
+          type: string
     Space:
-      type:
-        - object
+      type: object
       properties:
         name:
-          type: [ string ]
+          type: string
         color1:
-          type: [ string ]
+          type: string
         color2:
-          type: [ string ]
+          type: string
         color3:
-          type: [ string ]
+          type: string
         color4:
-          type: [ string ]
+          type: string
         primaryLanguage:
-          type: [ string ]
+          type: string
         languages:
-          type: [ array ]
+          type: array
           items:
             type: string
     Webhook:
-      type:
-        - object
+      type: object
       properties:
         name:
-          type: [ string ]
+          type: string
         url:
-          type: [ string ]
+          type: string
         header:
-          type: [ object ]
+          type: object
         events:
-          type: [ array ]
+          type: array
           items:
             type: string
   securitySchemes:
