@@ -1,6 +1,7 @@
 package bussniss_logic
 
 import (
+	"fmt"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/models"
 	"github.com/gin-gonic/gin"
@@ -93,7 +94,7 @@ func (s *Server) PutUserUserId(c *gin.Context, userId int) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
+	fmt.Println("updatedUser", updatedUser)
 	c.JSON(http.StatusOK, updatedUser)
 }
 

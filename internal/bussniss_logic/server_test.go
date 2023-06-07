@@ -8,7 +8,7 @@ import (
 )
 
 func TestPostUser(t *testing.T) {
-	w, c, server := setupTest(t)
+	server := setupServer(t)
 
 	tests := TestCases{
 		{
@@ -19,13 +19,21 @@ func TestPostUser(t *testing.T) {
 			ExpectedBody:       &models.User{ID: 1, Name: "John Doe", Email: "j@example.com"},
 			ExpectedStatusCode: http.StatusCreated,
 		},
+		{
+			name:               "Create user",
+			Url:                "/user",
+			RequestBody:        `{"name": "Jane Doe", "email": "ja@example.com"}`,
+			ResponseModel:      &models.User{},
+			ExpectedBody:       &models.User{ID: 2, Name: "Jane Doe", Email: "ja@example.com"},
+			ExpectedStatusCode: http.StatusCreated,
+		},
 	}
 
-	tests.testStaticUrlCases(t, w, c, server.PostUser)
+	tests.testStaticUrlCases(t, server.PostUser)
 }
 
 func TestServer_DeleteUserUserId(t *testing.T) {
-	w, c, server := setupTest(t)
+	server := setupServer(t)
 	user, err := server.DB.CreateUser(models.User{ID: 1, Name: "John Doe", Email: "a@example.com"})
 	if err != nil {
 		t.Error("Cannot create sample user", err)
@@ -39,11 +47,11 @@ func TestServer_DeleteUserUserId(t *testing.T) {
 		},
 	}
 
-	tests.testDynamicIntUrlCases(t, w, c, server.DeleteUserUserId)
+	tests.testDynamicIntUrlCases(t, server.DeleteUserUserId)
 }
 
 func TestServer_GetUserUserId(t *testing.T) {
-	w, c, server := setupTest(t)
+	server := setupServer(t)
 	user, err := server.DB.CreateUser(models.User{ID: 1, Name: "John Doe", Email: "a@example.com"})
 	if err != nil {
 		t.Error("Cannot create sample user", err)
@@ -59,11 +67,11 @@ func TestServer_GetUserUserId(t *testing.T) {
 		},
 	}
 
-	tests.testDynamicIntUrlCases(t, w, c, server.GetUserUserId)
+	tests.testDynamicIntUrlCases(t, server.GetUserUserId)
 }
 
 func TestServer_GetUsers(t *testing.T) {
-	w, c, server := setupTest(t)
+	server := setupServer(t)
 	users := &[]models.User{
 		{ID: 1, Name: "John Doe", Email: "a@example.com"},
 		{ID: 2, Name: "Jane Doe", Email: "b@example.com"},
@@ -86,11 +94,11 @@ func TestServer_GetUsers(t *testing.T) {
 		},
 	}
 
-	tests.testStaticUrlCases(t, w, c, server.GetUsers)
+	tests.testStaticUrlCases(t, server.GetUsers)
 }
 
 func TestServer_PutUserUserId(t *testing.T) {
-	w, c, server := setupTest(t)
+	server := setupServer(t)
 	user, err := server.DB.CreateUser(models.User{ID: 1, Name: "John Doee", Email: "a@example.com"})
 	if err != nil {
 		t.Error("Cannot create sample user", err)
@@ -105,7 +113,16 @@ func TestServer_PutUserUserId(t *testing.T) {
 			ExpectedBody:       &models.User{ID: 1, Name: "John Doe", Email: "a@example.com"},
 			ExpectedStatusCode: http.StatusOK,
 		},
+		{
+			name:               "Put user by id",
+			Url:                fmt.Sprintf("/user/%v", user.ID),
+			ID:                 user.ID,
+			RequestBody:        `{"id": 2, "name": "John Doe", "email": "a@example.com"}`,
+			ResponseModel:      &models.User{},
+			ExpectedBody:       &models.User{ID: 1, Name: "John Doe", Email: "a@example.com"},
+			ExpectedStatusCode: http.StatusOK,
+		},
 	}
 
-	tests.testDynamicIntUrlCases(t, w, c, server.PutUserUserId)
+	tests.testDynamicIntUrlCases(t, server.PutUserUserId)
 }

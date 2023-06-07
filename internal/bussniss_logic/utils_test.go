@@ -3,7 +3,6 @@ package bussniss_logic
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db/multi_db"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -21,14 +20,15 @@ type TestCase struct {
 	ID                 int
 	Str                string
 	RequestBody        string
-	ResponseModel      any
+	ResponseModel      interface{}
 	ExpectedBody       interface{}
 	ExpectedStatusCode int
 }
 
-func (tc TestCases) testStaticUrlCases(t *testing.T, w *httptest.ResponseRecorder, c *gin.Context, toTest func(ctx *gin.Context)) {
+func (tc TestCases) testStaticUrlCases(t *testing.T, toTest func(ctx *gin.Context)) {
 	for _, tt := range tc {
 		t.Run(tt.name, func(t *testing.T) {
+			w, c := setupGinTest()
 			c.Request, _ = http.NewRequest(http.MethodPost, tt.Url, strings.NewReader(tt.RequestBody))
 			c.Request.Header.Set("Content-Type", "application/json")
 
@@ -40,9 +40,10 @@ func (tc TestCases) testStaticUrlCases(t *testing.T, w *httptest.ResponseRecorde
 		})
 	}
 }
-func (tc TestCases) testDynamicIntUrlCases(t *testing.T, w *httptest.ResponseRecorder, c *gin.Context, toTest func(ctx *gin.Context, id int)) {
+func (tc TestCases) testDynamicIntUrlCases(t *testing.T, toTest func(ctx *gin.Context, id int)) {
 	for _, tt := range tc {
 		t.Run(tt.name, func(t *testing.T) {
+			w, c := setupGinTest()
 			c.Request, _ = http.NewRequest(http.MethodPost, tt.Url, strings.NewReader(tt.RequestBody))
 			c.Request.Header.Set("Content-Type", "application/json")
 
@@ -55,9 +56,10 @@ func (tc TestCases) testDynamicIntUrlCases(t *testing.T, w *httptest.ResponseRec
 	}
 }
 
-func (tc TestCases) testDynamicStringUrlCases(t *testing.T, w *httptest.ResponseRecorder, c *gin.Context, toTest func(ctx *gin.Context, str string)) {
+func (tc TestCases) testDynamicStringUrlCases(t *testing.T, toTest func(ctx *gin.Context, str string)) {
 	for _, tt := range tc {
 		t.Run(tt.name, func(t *testing.T) {
+			w, c := setupGinTest()
 			c.Request, _ = http.NewRequest(http.MethodPost, tt.Url, strings.NewReader(tt.RequestBody))
 			c.Request.Header.Set("Content-Type", "application/json")
 
@@ -70,7 +72,7 @@ func (tc TestCases) testDynamicStringUrlCases(t *testing.T, w *httptest.Response
 	}
 }
 
-func setupTestDB(t *testing.T) db.DataBase {
+func setupServer(t *testing.T) *Server {
 	testDB, err := multi_db.ConnectToSQLite(":memory:")
 	if err != nil {
 		fmt.Println("Error connecting to database:", err)
@@ -81,17 +83,14 @@ func setupTestDB(t *testing.T) db.DataBase {
 		fmt.Println("Error creating tables:", err)
 		t.Error("Error connecting to database:", err)
 	}
-	return testDB
+	return &Server{DB: testDB}
 }
 
-func setupTest(t *testing.T) (*httptest.ResponseRecorder, *gin.Context, *Server) {
+func setupGinTest() (*httptest.ResponseRecorder, *gin.Context) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	testDB := setupTestDB(t)
-	server := &Server{DB: testDB}
-
-	return w, c, server
+	return w, c
 }
 
 func AssertStatusCode(t *testing.T, w *httptest.ResponseRecorder, expectedCode int) {
