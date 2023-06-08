@@ -98,6 +98,25 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: Returns the created user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Issue with your Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Email already in use."
+        '500':
+          description: Issue with the server.
 
   /user/{user-id}:
     parameters:

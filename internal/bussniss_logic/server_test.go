@@ -2,6 +2,7 @@ package bussniss_logic
 
 import (
 	"fmt"
+	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/error_msg"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/models"
 	"net/http"
 	"testing"
@@ -20,12 +21,20 @@ func TestPostUser(t *testing.T) {
 			ExpectedStatusCode: http.StatusCreated,
 		},
 		{
-			name:               "Create user",
+			name:               "Create another user",
 			Url:                "/user",
 			RequestBody:        `{"name": "Jane Doe", "email": "ja@example.com"}`,
 			ResponseModel:      &models.User{},
 			ExpectedBody:       &models.User{ID: 2, Name: "Jane Doe", Email: "ja@example.com"},
 			ExpectedStatusCode: http.StatusCreated,
+		},
+		{
+			name:               "Create user, but email already in use",
+			Url:                "/user",
+			RequestBody:        `{"name": "Jane Doe", "email": "ja@example.com"}`,
+			ResponseModel:      &error_msg.Error{},
+			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorEmailAlreadyInUse},
+			ExpectedStatusCode: http.StatusBadRequest,
 		},
 	}
 

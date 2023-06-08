@@ -46,16 +46,36 @@ func TestMultiDB_GetUserByEmail(t *testing.T) {
 	defer teardown()
 
 	user := models.User{
-		Name:  "Jane Smith",
-		Email: "jane@example.com",
+		Name:  "John",
+		Email: "existing@example.com",
 	}
 
 	_, _ = multiDB.CreateUser(user)
 
-	resultUser, err := multiDB.GetUserByEmail(user.Email)
-	assert.NoError(t, err)
-	assert.Equal(t, user.Name, resultUser.Name)
-	assert.Equal(t, user.Email, resultUser.Email)
+	tests := []struct {
+		name         string
+		email        string
+		expectedUser models.User
+	}{
+		{
+			name:         "Existing User",
+			email:        "existing@example.com",
+			expectedUser: models.User{ID: 1, Name: "John", Email: "existing@example.com"},
+		},
+		{
+			name:         "Non-Existing User",
+			email:        "not-existing@example.com",
+			expectedUser: models.User{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			resultUser, err := multiDB.GetUserByEmail(test.email)
+			assert.Equal(t, test.expectedUser, resultUser)
+			assert.Equal(t, nil, err)
+		})
+	}
 }
 
 func TestMultiDB_GetUsers(t *testing.T) {

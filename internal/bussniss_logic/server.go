@@ -3,6 +3,7 @@ package bussniss_logic
 import (
 	"fmt"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db"
+	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/error_msg"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/models"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -50,10 +51,22 @@ func (s *Server) PostUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	userByEmail, err := s.DB.GetUserByEmail(user.Email)
+	if err != nil {
+		fmt.Println("Error getting user by email:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if userByEmail != (models.User{}) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": error_msg.ErrorEmailAlreadyInUse})
+		return
+	}
 
 	createdUser, err := s.DB.CreateUser(user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println("Error creating user:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 

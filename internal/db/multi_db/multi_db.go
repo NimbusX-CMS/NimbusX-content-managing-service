@@ -1,6 +1,7 @@
 package multi_db
 
 import (
+	"errors"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -29,7 +30,13 @@ func (m *MultiDB) GetUser(userId int) (models.User, error) {
 func (m *MultiDB) GetUserByEmail(email string) (models.User, error) {
 	var user models.User
 	err := m.db.Where("email = ?", email).First(&user).Error
-	return user, err
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.User{}, nil
+		}
+		return models.User{}, err
+	}
+	return user, nil
 }
 
 func (m *MultiDB) GetUsers() ([]models.User, error) {
