@@ -88,6 +88,8 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/User'
+        '500':
+          description: Issue with the server.
 
   /user/:
     post:
@@ -114,7 +116,7 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: "Email already in use."
+                    example: "User with this email already exists"
         '500':
           description: Issue with the server.
 
@@ -131,11 +133,23 @@ paths:
         - "User"
       responses:
         '200':
-          description: The specified User.
+          description: Returns the specified User.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        '404':
+          description: Issue with your Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found, by the given id"
+        '500':
+          description: Issue with the server.
     put:
       tags:
         - "User"
@@ -144,9 +158,43 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Returns the modified User.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Issue with your Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found, by the given id"
+        '500':
+          description: Issue with the server.
     delete:
       tags:
         - "User"
+      responses:
+        '200':
+          description: User deleted
+        '404':
+          description: Issue with your Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found, by the given id"
+        '500':
+          description: Issue with the server.
 
   /user/{user-id}/spaces:
     parameters:

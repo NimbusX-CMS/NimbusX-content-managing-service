@@ -54,6 +54,12 @@ func TestServer_DeleteUserUserId(t *testing.T) {
 			ID:                 user.ID,
 			ExpectedStatusCode: http.StatusOK,
 		},
+		{
+			name:               "Delete user",
+			Url:                fmt.Sprintf("/user/%v", 12312),
+			ID:                 12312,
+			ExpectedStatusCode: http.StatusBadRequest,
+		},
 	}
 
 	tests.testDynamicIntUrlCases(t, server.DeleteUserUserId)
@@ -67,12 +73,20 @@ func TestServer_GetUserUserId(t *testing.T) {
 	}
 	tests := TestCases{
 		{
-			name:               "Get user by id",
+			name:               "Existing User",
 			Url:                fmt.Sprintf("/user/%v", user.ID),
 			ID:                 user.ID,
 			ResponseModel:      &models.User{},
 			ExpectedBody:       &models.User{ID: 1, Name: "John Doe", Email: "a@example.com"},
 			ExpectedStatusCode: http.StatusOK,
+		},
+		{
+			name:               "Not existing User",
+			Url:                fmt.Sprintf("/user/%v", 1234124),
+			ID:                 1234124,
+			ResponseModel:      &error_msg.Error{},
+			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorUserWithIdNotFound},
+			ExpectedStatusCode: http.StatusBadRequest,
 		},
 	}
 
@@ -81,11 +95,22 @@ func TestServer_GetUserUserId(t *testing.T) {
 
 func TestServer_GetUsers(t *testing.T) {
 	server := setupServer(t)
+
+	tests := TestCases{
+		{
+			name:               "Get users",
+			Url:                "/users",
+			ResponseModel:      &[]models.User{},
+			ExpectedBody:       &[]models.User{},
+			ExpectedStatusCode: http.StatusOK,
+		},
+	}
+	tests.testStaticUrlCases(t, server.GetUsers)
+
 	users := &[]models.User{
 		{ID: 1, Name: "John Doe", Email: "a@example.com"},
 		{ID: 2, Name: "Jane Doe", Email: "b@example.com"},
 	}
-
 	for _, user := range *users {
 		_, err := server.DB.CreateUser(user)
 		if err != nil {
@@ -93,7 +118,7 @@ func TestServer_GetUsers(t *testing.T) {
 		}
 	}
 
-	tests := TestCases{
+	tests = TestCases{
 		{
 			name:               "Get users",
 			Url:                "/users",
@@ -102,7 +127,6 @@ func TestServer_GetUsers(t *testing.T) {
 			ExpectedStatusCode: http.StatusOK,
 		},
 	}
-
 	tests.testStaticUrlCases(t, server.GetUsers)
 }
 
@@ -130,6 +154,15 @@ func TestServer_PutUserUserId(t *testing.T) {
 			ResponseModel:      &models.User{},
 			ExpectedBody:       &models.User{ID: 1, Name: "John Doe", Email: "a@example.com"},
 			ExpectedStatusCode: http.StatusOK,
+		},
+		{
+			name:               "Put user by id",
+			Url:                fmt.Sprintf("/user/%v", 12341234213),
+			ID:                 12341234213,
+			RequestBody:        `{"id": 2, "name": "John Doe", "email": "a@example.com"}`,
+			ResponseModel:      &error_msg.Error{},
+			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorUserWithIdNotFound},
+			ExpectedStatusCode: http.StatusBadRequest,
 		},
 	}
 

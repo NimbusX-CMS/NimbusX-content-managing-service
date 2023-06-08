@@ -74,6 +74,11 @@ func (s *Server) PostUser(c *gin.Context) {
 }
 
 func (s *Server) DeleteUserUserId(c *gin.Context, userId int) {
+	_, success := s.getUserByID(c, userId)
+	if !success {
+		return
+	}
+
 	err := s.DB.DeleteUser(userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -84,12 +89,10 @@ func (s *Server) DeleteUserUserId(c *gin.Context, userId int) {
 }
 
 func (s *Server) GetUserUserId(c *gin.Context, userId int) {
-	user, err := s.DB.GetUser(userId)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	user, success := s.getUserByID(c, userId)
+	if !success {
 		return
 	}
-
 	c.JSON(http.StatusOK, user)
 }
 
@@ -99,8 +102,12 @@ func (s *Server) PutUserUserId(c *gin.Context, userId int) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	user.ID = userId
+
+	_, success := s.getUserByID(c, userId)
+	if !success {
+		return
+	}
 
 	updatedUser, err := s.DB.UpdateUser(user)
 	if err != nil {
@@ -117,8 +124,21 @@ func (s *Server) GetUsers(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.JSON(http.StatusOK, users)
+}
+
+func (s *Server) getUserByID(c *gin.Context, userId int) (models.User, bool) {
+	userFromDB, err := s.DB.GetUser(userId)
+	if err != nil {
+		fmt.Println("Error getting user by id:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return models.User{}, false
+	}
+	if userFromDB == (models.User{}) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": error_msg.ErrorUserWithIdNotFound})
+		return models.User{}, false
+	}
+	return userFromDB, true
 }
 
 func (s *Server) GetUserUserIdSpaces(c *gin.Context, userId int) {

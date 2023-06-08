@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db/multi_db"
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -94,9 +95,7 @@ func setupGinTest() (*httptest.ResponseRecorder, *gin.Context) {
 }
 
 func AssertStatusCode(t *testing.T, w *httptest.ResponseRecorder, expectedCode int) {
-	if w.Code != expectedCode {
-		t.Errorf("expected status %v, got %v", expectedCode, w.Code)
-	}
+	assert.Equal(t, expectedCode, w.Code)
 }
 
 func AssertBody(t *testing.T, w *httptest.ResponseRecorder, responseModel any, expectedBody interface{}) {
@@ -109,6 +108,6 @@ func AssertBody(t *testing.T, w *httptest.ResponseRecorder, responseModel any, e
 	}
 
 	if !reflect.DeepEqual(responseModel, expectedBody) {
-		t.Errorf("Expected user %+v but got %+v", expectedBody, responseModel)
+		t.Errorf("Expected %+v but got %+v", expectedBody, responseModel)
 	}
 }
