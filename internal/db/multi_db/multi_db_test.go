@@ -34,11 +34,33 @@ func TestMultiDB_GetUser(t *testing.T) {
 
 	createdUser, _ := multiDB.CreateUser(user)
 
-	resultUser, err := multiDB.GetUser(createdUser.ID)
-	assert.NoError(t, err)
-	assert.Equal(t, createdUser.ID, resultUser.ID)
-	assert.Equal(t, createdUser.Name, resultUser.Name)
-	assert.Equal(t, createdUser.Email, resultUser.Email)
+	tests := []struct {
+		name          string
+		id            int
+		expectedUser  models.User
+		expectedError error
+	}{
+		{
+			name:          "Existing User",
+			id:            createdUser.ID,
+			expectedUser:  models.User{ID: createdUser.ID, Name: "John Doe", Email: "john@example.com"},
+			expectedError: nil,
+		},
+		{
+			name:          "Non-Existing User",
+			id:            1234,
+			expectedUser:  models.User{},
+			expectedError: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			resultUser, err := multiDB.GetUser(test.id)
+			assert.Equal(t, test.expectedUser, resultUser)
+			assert.Equal(t, test.expectedError, err)
+		})
+	}
 }
 
 func TestMultiDB_GetUserByEmail(t *testing.T) {
@@ -101,13 +123,27 @@ func TestMultiDB_GetUsers(t *testing.T) {
 		_, _ = multiDB.CreateUser(user)
 	}
 
-	resultUsers, err := multiDB.GetUsers()
-	assert.NoError(t, err)
-	assert.Equal(t, len(users), len(resultUsers))
+	tests := []struct {
+		name           string
+		expectedLength int
+	}{
+		{
+			name:           "Get All Users",
+			expectedLength: len(users),
+		},
+	}
 
-	for i, user := range users {
-		assert.Equal(t, user.Name, resultUsers[i].Name)
-		assert.Equal(t, user.Email, resultUsers[i].Email)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			resultUsers, err := multiDB.GetUsers()
+			assert.NoError(t, err)
+			assert.Len(t, resultUsers, test.expectedLength)
+
+			for i, user := range users {
+				assert.Equal(t, user.Name, resultUsers[i].Name)
+				assert.Equal(t, user.Email, resultUsers[i].Email)
+			}
+		})
 	}
 }
 
@@ -122,12 +158,27 @@ func TestMultiDB_UpdateUser(t *testing.T) {
 
 	createdUser, _ := multiDB.CreateUser(user)
 
-	createdUser.Name = "John Smith"
-	updatedUser, err := multiDB.UpdateUser(createdUser)
-	assert.NoError(t, err)
-	assert.Equal(t, createdUser.ID, updatedUser.ID)
-	assert.Equal(t, createdUser.Name, updatedUser.Name)
-	assert.Equal(t, createdUser.Email, updatedUser.Email)
+	tests := []struct {
+		name         string
+		userToUpdate models.User
+		expectedUser models.User
+		expectedErr  error
+	}{
+		{
+			name:         "Update User",
+			userToUpdate: models.User{ID: createdUser.ID, Name: "John Smith", Email: "john@example.com"},
+			expectedUser: models.User{ID: createdUser.ID, Name: "John Smith", Email: "john@example.com"},
+			expectedErr:  nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			updatedUser, err := multiDB.UpdateUser(test.userToUpdate)
+			assert.NoError(t, err)
+			assert.Equal(t, test.expectedUser, updatedUser)
+		})
+	}
 }
 
 func TestMultiDB_DeleteUser(t *testing.T) {
@@ -141,9 +192,28 @@ func TestMultiDB_DeleteUser(t *testing.T) {
 
 	createdUser, _ := multiDB.CreateUser(user)
 
-	err := multiDB.DeleteUser(createdUser.ID)
-	assert.NoError(t, err)
+	tests := []struct {
+		name         string
+		idToDelete   int
+		expectedErr  error
+		expectedUser models.User
+	}{
+		{
+			name:         "Delete User",
+			idToDelete:   createdUser.ID,
+			expectedErr:  nil,
+			expectedUser: models.User{},
+		},
+	}
 
-	_, err = multiDB.GetUser(createdUser.ID)
-	assert.Error(t, err)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := multiDB.DeleteUser(test.idToDelete)
+			assert.NoError(t, err)
+
+			deletedUser, err := multiDB.GetUser(test.idToDelete)
+			assert.NoError(t, err)
+			assert.Equal(t, test.expectedUser, deletedUser)
+		})
+	}
 }

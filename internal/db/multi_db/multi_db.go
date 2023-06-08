@@ -24,6 +24,12 @@ func (m *MultiDB) EnsureTablesCreation() error {
 func (m *MultiDB) GetUser(userId int) (models.User, error) {
 	var user models.User
 	err := m.db.First(&user, userId).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.User{}, nil
+		}
+		return models.User{}, err
+	}
 	return user, err
 }
 
@@ -42,6 +48,13 @@ func (m *MultiDB) GetUserByEmail(email string) (models.User, error) {
 func (m *MultiDB) GetUsers() ([]models.User, error) {
 	var users []models.User
 	err := m.db.Find(&users).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return []models.User{}, nil
+		}
+		return []models.User{}, err
+	}
+
 	return users, err
 }
 
