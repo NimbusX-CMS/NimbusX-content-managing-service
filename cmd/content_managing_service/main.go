@@ -4,17 +4,30 @@ import (
 	"fmt"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/api"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/bussniss_logic"
+	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db/multi_db"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	router := gin.Default()
 
-	server := &bussniss_logic.Server{}
+	db, err := multi_db.ConnectToSQLite("db.sqlite")
+	if err != nil {
+		fmt.Println("Error connecting to database:", err)
+		return
+	}
+	err = db.EnsureTablesCreation()
+	if err != nil {
+		fmt.Println("Error creating tables:", err)
+		return
+	}
+	server := &bussniss_logic.Server{
+		DB: db,
+	}
 
 	api.RegisterHandlers(router, server)
 
-	err := router.Run(":8080")
+	err = router.Run(":8080")
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 	}
