@@ -107,7 +107,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        '404':
+        '400':
           description: Issue with your Request.
           content:
             application/json:
@@ -138,7 +138,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        '404':
+        '400':
           description: Issue with your Request.
           content:
             application/json:
@@ -165,7 +165,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        '404':
+        '400':
           description: Issue with your Request.
           content:
             application/json:
@@ -183,7 +183,7 @@ paths:
       responses:
         '200':
           description: User deleted
-        '404':
+        '400':
           description: Issue with your Request.
           content:
             application/json:

@@ -48,6 +48,7 @@ func (s *Server) GetSpaces(c *gin.Context) {
 func (s *Server) PostUser(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
+		fmt.Println("Error binding user JSON:", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -59,6 +60,7 @@ func (s *Server) PostUser(c *gin.Context) {
 	}
 
 	if userByEmail != (models.User{}) {
+		fmt.Println("Error email already in use:", userByEmail)
 		c.JSON(http.StatusBadRequest, gin.H{"error": error_msg.ErrorEmailAlreadyInUse})
 		return
 	}
@@ -81,7 +83,8 @@ func (s *Server) DeleteUserUserId(c *gin.Context, userId int) {
 
 	err := s.DB.DeleteUser(userId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println("Error deleting user:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
@@ -99,6 +102,7 @@ func (s *Server) GetUserUserId(c *gin.Context, userId int) {
 func (s *Server) PutUserUserId(c *gin.Context, userId int) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
+		fmt.Println("Error binding user JSON:", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -111,17 +115,18 @@ func (s *Server) PutUserUserId(c *gin.Context, userId int) {
 
 	updatedUser, err := s.DB.UpdateUser(user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println("Error updating user:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("updatedUser", updatedUser)
 	c.JSON(http.StatusOK, updatedUser)
 }
 
 func (s *Server) GetUsers(c *gin.Context) {
 	users, err := s.DB.GetUsers()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Println("Error getting users:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	c.JSON(http.StatusOK, users)
@@ -135,6 +140,7 @@ func (s *Server) getUserByID(c *gin.Context, userId int) (models.User, bool) {
 		return models.User{}, false
 	}
 	if userFromDB == (models.User{}) {
+		fmt.Println("Error user with id not found:", userId)
 		c.JSON(http.StatusBadRequest, gin.H{"error": error_msg.ErrorUserWithIdNotFound})
 		return models.User{}, false
 	}
