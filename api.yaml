@@ -368,6 +368,8 @@ components:
     Space:
       type: object
       properties:
+        id:
+          type: integer
         name:
           type: string
         color1:
@@ -377,6 +379,8 @@ components:
         color3:
           type: string
         color4:
+          type: string
+        imageURL:
           type: string
         primaryLanguage:
           type: string
