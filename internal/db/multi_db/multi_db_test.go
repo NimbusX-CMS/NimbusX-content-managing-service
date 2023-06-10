@@ -1,7 +1,6 @@
 package multi_db
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -243,10 +242,7 @@ func TestMultiDB_GetSpace(t *testing.T) {
 		},
 	}
 
-	createdSpace, err := multiDB.CreateSpace(space)
-	fmt.Println("To create space: ", space)
-	fmt.Println("Created Space: ", createdSpace)
-	fmt.Println("Error: ", err)
+	createdSpace, _ := multiDB.CreateSpace(space)
 
 	tests := []struct {
 		name          string
@@ -571,4 +567,217 @@ func getField(space models.Space, field string) interface{} {
 		value = value.FieldByName(f)
 	}
 	return value.Interface()
+}
+
+func TestMultiDB_GetSpaceAccess(t *testing.T) {
+	multiDB, teardown := setupTestDB()
+	defer teardown()
+
+	// Prepare test data
+	userId := 1
+	spaceId := 1
+	existingAccess := models.SpaceAccess{
+		UserID:  userId,
+		SpaceID: spaceId,
+		Admin:   true,
+	}
+	_, _ = multiDB.CreateSpaceAccess(existingAccess)
+
+	tests := []struct {
+		name           string
+		userId         int
+		spaceId        int
+		expectedAccess models.SpaceAccess
+		expectedError  error
+	}{
+		{
+			name:           "Existing Access",
+			userId:         userId,
+			spaceId:        spaceId,
+			expectedAccess: existingAccess,
+			expectedError:  nil,
+		},
+		{
+			name:           "Non-Existing Access",
+			userId:         2,
+			spaceId:        2,
+			expectedAccess: models.SpaceAccess{},
+			expectedError:  nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			access, err := multiDB.GetSpaceAccess(test.userId, test.spaceId)
+			assert.Equal(t, test.expectedAccess, access)
+			assert.Equal(t, test.expectedError, err)
+		})
+	}
+}
+
+func TestMultiDB_GetSpaceAccesses(t *testing.T) {
+	multiDB, teardown := setupTestDB()
+	defer teardown()
+
+	// Prepare test data
+	userId := 1
+	accesses := []models.SpaceAccess{
+		{UserID: userId, SpaceID: 1, Admin: true},
+		{UserID: userId, SpaceID: 2, Admin: false},
+	}
+	for _, access := range accesses {
+		_, _ = multiDB.CreateSpaceAccess(access)
+	}
+
+	tests := []struct {
+		name             string
+		userId           int
+		expectedAccesses []models.SpaceAccess
+		expectedError    error
+	}{
+		{
+			name:             "Existing Accesses",
+			userId:           userId,
+			expectedAccesses: accesses,
+			expectedError:    nil,
+		},
+		{
+			name:             "Non-Existing Accesses",
+			userId:           2,
+			expectedAccesses: []models.SpaceAccess{},
+			expectedError:    nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			resultAccesses, err := multiDB.GetSpaceAccesses(test.userId)
+			assert.Equal(t, test.expectedAccesses, resultAccesses)
+			assert.Equal(t, test.expectedError, err)
+		})
+	}
+}
+func TestMultiDB_CreateSpaceAccess(t *testing.T) {
+	multiDB, teardown := setupTestDB()
+	defer teardown()
+
+	// Prepare test data
+	userId := 1
+	spaceId := 1
+
+	tests := []struct {
+		name          string
+		access        models.SpaceAccess
+		expectedError error
+	}{
+		{
+			name: "Create Access",
+			access: models.SpaceAccess{
+				UserID:  userId,
+				SpaceID: spaceId,
+				Admin:   true,
+			},
+			expectedError: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := multiDB.CreateSpaceAccess(test.access)
+			assert.Equal(t, test.expectedError, err)
+
+			// Check if the access was created successfully
+			resultAccess, _ := multiDB.GetSpaceAccess(test.access.UserID, test.access.SpaceID)
+			assert.Equal(t, test.access, resultAccess)
+		})
+	}
+}
+
+func TestMultiDB_UpdateSpaceAccess(t *testing.T) {
+	multiDB, teardown := setupTestDB()
+	defer teardown()
+
+	// Prepare test data
+	userId := 1
+	spaceId := 1
+	access := models.SpaceAccess{
+		UserID:  userId,
+		SpaceID: spaceId,
+		Admin:   true,
+	}
+	_, _ = multiDB.CreateSpaceAccess(access)
+
+	tests := []struct {
+		name          string
+		access        models.SpaceAccess
+		expectedError error
+	}{
+		{
+			name:          "Update Access",
+			access:        models.SpaceAccess{UserID: userId, SpaceID: spaceId, Admin: false},
+			expectedError: nil,
+		},
+		{
+			name:          "Update Non-Existing Access",
+			access:        models.SpaceAccess{UserID: 2, SpaceID: 2, Admin: true},
+			expectedError: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := multiDB.UpdateSpaceAccess(test.access)
+			assert.Equal(t, test.expectedError, err)
+
+			// Check if the access was updated successfully
+			resultAccess, _ := multiDB.GetSpaceAccess(test.access.UserID, test.access.SpaceID)
+			assert.Equal(t, test.access, resultAccess)
+		})
+	}
+}
+
+func TestMultiDB_DeleteSpaceAccess(t *testing.T) {
+	multiDB, teardown := setupTestDB()
+	defer teardown()
+
+	// Prepare test data
+	userId := 1
+	spaceId := 1
+	access := models.SpaceAccess{
+		UserID:  userId,
+		SpaceID: spaceId,
+		Admin:   true,
+	}
+	_, _ = multiDB.CreateSpaceAccess(access)
+
+	tests := []struct {
+		name          string
+		userId        int
+		spaceId       int
+		expectedError error
+	}{
+		{
+			name:          "Delete Access",
+			userId:        userId,
+			spaceId:       spaceId,
+			expectedError: nil,
+		},
+		{
+			name:          "Delete Non-Existing Access",
+			userId:        2,
+			spaceId:       2,
+			expectedError: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := multiDB.DeleteSpaceAccess(test.userId, test.spaceId)
+			assert.Equal(t, test.expectedError, err)
+
+			// Check if the access was deleted successfully
+			_, err = multiDB.GetSpaceAccess(test.userId, test.spaceId)
+			assert.Equal(t, test.expectedError, err)
+		})
+	}
 }
