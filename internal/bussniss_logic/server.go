@@ -26,23 +26,79 @@ func (s *Server) PostPasswordToken(c *gin.Context, token string) {
 }
 
 func (s *Server) PostSpace(c *gin.Context) {
-	c.AbortWithStatus(http.StatusNotImplemented)
+	var space models.Space
+	if err := c.ShouldBindJSON(&space); err != nil {
+		fmt.Println("Error binding space JSON:", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	createdSpace, err := s.DB.CreateSpace(space)
+	if err != nil {
+		fmt.Println("Error creating space:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusCreated, createdSpace)
 }
 
 func (s *Server) DeleteSpaceSpaceId(c *gin.Context, spaceId int) {
-	c.AbortWithStatus(http.StatusNotImplemented)
+	_, success := s.getSpaceByID(c, spaceId)
+	if !success {
+		return
+	}
+
+	err := s.DB.DeleteSpace(spaceId)
+	if err != nil {
+		fmt.Println("Error deleting space:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 
 func (s *Server) GetSpaceSpaceId(c *gin.Context, spaceId int) {
-	c.AbortWithStatus(http.StatusNotImplemented)
+	space, success := s.getSpaceByID(c, spaceId)
+	if !success {
+		return
+	}
+	c.JSON(http.StatusOK, space)
 }
 
 func (s *Server) PutSpaceSpaceId(c *gin.Context, spaceId int) {
-	c.AbortWithStatus(http.StatusNotImplemented)
+	var space models.Space
+	if err := c.ShouldBindJSON(&space); err != nil {
+		fmt.Println("Error binding space JSON:", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	space.ID = spaceId
+
+	_, success := s.getSpaceByID(c, spaceId)
+	if !success {
+		return
+	}
+
+	updatedSpace, err := s.DB.UpdateSpace(space)
+	if err != nil {
+		fmt.Println("Error updating space:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, updatedSpace)
 }
 
 func (s *Server) GetSpaces(c *gin.Context) {
-	c.AbortWithStatus(http.StatusNotImplemented)
+	spaces, err := s.DB.GetSpaces()
+	if err != nil {
+		fmt.Println("Error getting spaces:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, spaces)
 }
 
 func (s *Server) PostUser(c *gin.Context) {
@@ -147,8 +203,29 @@ func (s *Server) getUserByID(c *gin.Context, userId int) (models.User, bool) {
 	return userFromDB, true
 }
 
+func (s *Server) getSpaceByID(c *gin.Context, spaceID int) (models.Space, bool) {
+	spaceFromDB, err := s.DB.GetSpace(spaceID)
+	if err != nil {
+		fmt.Println("Error getting space by id:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return models.Space{}, false
+	}
+	if spaceFromDB.ID == 0 {
+		fmt.Println("Error space with id not found:", spaceID)
+		c.JSON(http.StatusBadRequest, gin.H{"error": error_msg.ErrorSpaceWithIdNotFound})
+		return models.Space{}, false
+	}
+	return spaceFromDB, true
+}
+
 func (s *Server) GetUserUserIdSpaces(c *gin.Context, userId int) {
-	c.AbortWithStatus(http.StatusNotImplemented)
+	spaceAccesses, err := s.DB.GetSpaceAccesses(userId)
+	if err != nil {
+		fmt.Println("Error getting space accesses:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, spaceAccesses)
 }
 
 func (s *Server) GetWebhooks(c *gin.Context) {
