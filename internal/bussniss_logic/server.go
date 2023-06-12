@@ -219,6 +219,10 @@ func (s *Server) getSpaceByID(c *gin.Context, spaceID int) (models.Space, bool) 
 }
 
 func (s *Server) GetUserUserIdSpaces(c *gin.Context, userId int) {
+	_, success := s.getUserByID(c, userId)
+	if !success {
+		return
+	}
 	spaceAccesses, err := s.DB.GetSpaceAccesses(userId)
 	if err != nil {
 		fmt.Println("Error getting space accesses:", err)

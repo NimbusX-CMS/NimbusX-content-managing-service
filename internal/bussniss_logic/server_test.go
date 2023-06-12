@@ -38,6 +38,14 @@ func TestServer_DeleteSpaceSpaceId(t *testing.T) {
 			ID:                 space.ID,
 			ExpectedStatusCode: http.StatusOK,
 		},
+		{
+			name:               "DeleteSpaceSpaceId, but space does not exist",
+			Url:                "/spaces/123123",
+			ID:                 123123,
+			ResponseModel:      &error_msg.Error{},
+			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorSpaceWithIdNotFound},
+			ExpectedStatusCode: http.StatusBadRequest,
+		},
 	}
 	tests.testDynamicIntUrlCases(t, server.DeleteSpaceSpaceId)
 }
@@ -56,6 +64,14 @@ func TestServer_GetSpaceSpaceId(t *testing.T) {
 			ResponseModel:      &models.Space{},
 			ExpectedBody:       &models.Space{ID: space.ID, Name: "Test Space", Languages: []models.Language{}},
 			ExpectedStatusCode: http.StatusOK,
+		},
+		{
+			name:               "GetSpaceSpaceId, but space does not exist",
+			Url:                "/spaces/123123",
+			ID:                 123123,
+			ResponseModel:      &error_msg.Error{},
+			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorSpaceWithIdNotFound},
+			ExpectedStatusCode: http.StatusBadRequest,
 		},
 	}
 
@@ -79,6 +95,15 @@ func TestServer_PutSpaceSpaceId(t *testing.T) {
 			ExpectedBody:       &models.Space{ID: space.ID, Name: "Updated Space"},
 			ExpectedStatusCode: http.StatusOK,
 		},
+		{
+			name:               "PutSpaceSpaceId, but space does not exist",
+			Url:                "/spaces/123123",
+			ID:                 123123,
+			RequestBody:        `{"name":"Updated Space"}`,
+			ResponseModel:      &error_msg.Error{},
+			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorSpaceWithIdNotFound},
+			ExpectedStatusCode: http.StatusBadRequest,
+		},
 	}
 	tests.testDynamicIntUrlCases(t, server.PutSpaceSpaceId)
 }
@@ -100,6 +125,18 @@ func TestServer_GetSpaces(t *testing.T) {
 
 func TestServer_GetUserUserIdSpaces(t *testing.T) {
 	server := setupServer(t)
+	_, err := server.DB.CreateUser(models.User{ID: 1, Name: "Test User"})
+	if err != nil {
+		t.Error("Cannot create sample user", err)
+	}
+	space, err := server.DB.CreateSpace(models.Space{ID: 1, Name: "Test Space"})
+	if err != nil {
+		t.Error("Cannot create sample space", err)
+	}
+	spaceAccess, err := server.DB.CreateSpaceAccess(models.SpaceAccess{UserID: 1, SpaceID: space.ID})
+	if err != nil {
+		t.Error("Cannot create sample space access", err)
+	}
 
 	tests := TestCases{
 		{
@@ -107,8 +144,16 @@ func TestServer_GetUserUserIdSpaces(t *testing.T) {
 			Url:                "/users/1/spaces",
 			ID:                 1,
 			ResponseModel:      &[]models.SpaceAccess{},
-			ExpectedBody:       &[]models.SpaceAccess{},
+			ExpectedBody:       &[]models.SpaceAccess{spaceAccess},
 			ExpectedStatusCode: http.StatusOK,
+		},
+		{
+			name:               "GetUserUserIdSpaces, but user does not exist",
+			Url:                "/users/123123/spaces",
+			ID:                 123123,
+			ResponseModel:      &error_msg.Error{},
+			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorUserWithIdNotFound},
+			ExpectedStatusCode: http.StatusBadRequest,
 		},
 	}
 	tests.testDynamicIntUrlCases(t, server.GetUserUserIdSpaces)
