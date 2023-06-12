@@ -44,7 +44,7 @@ func TestServer_DeleteSpaceSpaceId(t *testing.T) {
 			ID:                 123123,
 			ResponseModel:      &error_msg.Error{},
 			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorSpaceWithIdNotFound},
-			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedStatusCode: http.StatusNotFound,
 		},
 	}
 	tests.testDynamicIntUrlCases(t, server.DeleteSpaceSpaceId)
@@ -71,7 +71,7 @@ func TestServer_GetSpaceSpaceId(t *testing.T) {
 			ID:                 123123,
 			ResponseModel:      &error_msg.Error{},
 			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorSpaceWithIdNotFound},
-			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedStatusCode: http.StatusNotFound,
 		},
 	}
 
@@ -102,7 +102,7 @@ func TestServer_PutSpaceSpaceId(t *testing.T) {
 			RequestBody:        `{"name":"Updated Space"}`,
 			ResponseModel:      &error_msg.Error{},
 			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorSpaceWithIdNotFound},
-			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedStatusCode: http.StatusNotFound,
 		},
 	}
 	tests.testDynamicIntUrlCases(t, server.PutSpaceSpaceId)

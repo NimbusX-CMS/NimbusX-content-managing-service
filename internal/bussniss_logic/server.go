@@ -212,7 +212,7 @@ func (s *Server) getSpaceByID(c *gin.Context, spaceID int) (models.Space, bool) 
 	}
 	if spaceFromDB.ID == 0 {
 		fmt.Println("Error space with id not found:", spaceID)
-		c.JSON(http.StatusBadRequest, gin.H{"error": error_msg.ErrorSpaceWithIdNotFound})
+		c.JSON(http.StatusNotFound, gin.H{"error": error_msg.ErrorSpaceWithIdNotFound})
 		return models.Space{}, false
 	}
 	return spaceFromDB, true

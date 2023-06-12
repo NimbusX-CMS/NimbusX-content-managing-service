@@ -275,7 +275,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Space'
-        '400':
+        '404':
           description: Issue with your Request.
           content:
             application/json:
@@ -303,7 +303,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Space'
-        '400':
+        '404':
           description: Issue with your Request.
           content:
             application/json:
@@ -321,7 +321,7 @@ paths:
       responses:
         '200':
           description: Space deleted
-        '400':
+        '404':
           description: Issue with your Request.
           content:
             application/json:

@@ -234,10 +234,10 @@ func TestMultiDB_GetSpace(t *testing.T) {
 		PrimaryLanguageID: 1,
 		Languages: []models.Language{
 			{
-				Name: "German",
+				Name: "de-DE",
 			},
 			{
-				Name: "French",
+				Name: "fr-FR",
 			},
 		},
 	}
@@ -264,16 +264,16 @@ func TestMultiDB_GetSpace(t *testing.T) {
 				PrimaryLanguageID: createdSpace.PrimaryLanguageID,
 				PrimaryLanguage: models.Language{
 					ID:   1,
-					Name: "German",
+					Name: "de-DE",
 				},
 				Languages: []models.Language{
 					{
 						ID:   1,
-						Name: "German",
+						Name: "de-DE",
 					},
 					{
 						ID:   2,
-						Name: "French",
+						Name: "fr-FR",
 					},
 				},
 			},
