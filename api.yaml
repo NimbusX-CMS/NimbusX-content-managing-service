@@ -228,6 +228,71 @@ paths:
                     example: "User not found, by the given id"
         '500':
           description: Issue with the server.
+    patch:
+      tags:
+        - "User"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpaceAccess'
+      responses:
+        '200':
+          description: Returns the modified SpaceAccess.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceAccess'
+        '400':
+          description: Issue with your Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found, by the given id"
+        '500':
+          description: Issue with the server.
+
+  /user/{user-id}/space/{space-id}:
+    parameters:
+      - name: user-id
+        in: path
+        description: ID parameter
+        required: true
+        schema:
+          type: integer
+      - name: space-id
+        in: path
+        description: ID parameter
+        required: true
+        schema:
+          type: integer
+    delete:
+      tags:
+        - "User"
+      responses:
+        '200':
+          description: Returns the delted SpaceAccess.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceAccess'
+        '400':
+          description: Issue with your Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found, by the given id"
+        '500':
+          description: Issue with the server.
+
   # Space
   /spaces/:
     get:
