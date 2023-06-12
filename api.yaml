@@ -216,7 +216,18 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SpaceAccess'
-
+        '400':
+          description: Issue with your Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found, by the given id"
+        '500':
+          description: Issue with the server.
   # Space
   /spaces/:
     get:
@@ -231,10 +242,21 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Space'
+        '500':
+          description: Issue with the server.
   /space/:
     post:
       tags:
         - "Space"
+      responses:
+        '201':
+          description: Returns the created space.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+        '500':
+          description: Issue with the server.
   /space/{space-id}:
     parameters:
       - name: space-id
@@ -248,11 +270,24 @@ paths:
         - "Space"
       responses:
         '200':
-          description: The specified Space.
+          description: Returns the specified Space.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Space'
+        '400':
+          description: Issue with your Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Space not found, by the given id"
+        '500':
+          description: Issue with the server.
+
     put:
       tags:
         - "Space"
@@ -260,10 +295,44 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/Space'
+      responses:
+        '200':
+          description: Returns the modified Space.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+        '400':
+          description: Issue with your Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Space not found, by the given id"
+        '500':
+          description: Issue with the server.
     delete:
       tags:
         - "Space"
+      responses:
+        '200':
+          description: Space deleted
+        '400':
+          description: Issue with your Request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Space not found, by the given id"
+        '500':
+          description: Issue with the server.
 
 
   # Webhooks
