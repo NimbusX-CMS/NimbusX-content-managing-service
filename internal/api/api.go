@@ -50,8 +50,14 @@ type ServerInterface interface {
 	// (PUT /user/{user-id})
 	PutUserUserId(c *gin.Context, userId int)
 
+	// (DELETE /user/{user-id}/space/{space-id})
+	DeleteUserUserIdSpaceSpaceId(c *gin.Context, userId int, spaceId int)
+
 	// (GET /user/{user-id}/spaces)
 	GetUserUserIdSpaces(c *gin.Context, userId int)
+
+	// (PATCH /user/{user-id}/spaces)
+	PatchUserUserIdSpaces(c *gin.Context, userId int)
 
 	// (GET /users/)
 	GetUsers(c *gin.Context)
@@ -330,6 +336,41 @@ func (siw *ServerInterfaceWrapper) PutUserUserId(c *gin.Context) {
 	siw.Handler.PutUserUserId(c, userId)
 }
 
+// DeleteUserUserIdSpaceSpaceId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteUserUserIdSpaceSpaceId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "user-id" -------------
+	var userId int
+
+	err = runtime.BindStyledParameter("simple", false, "user-id", c.Param("user-id"), &userId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter user-id: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "space-id" -------------
+	var spaceId int
+
+	err = runtime.BindStyledParameter("simple", false, "space-id", c.Param("space-id"), &spaceId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter space-id: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(CookieAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteUserUserIdSpaceSpaceId(c, userId, spaceId)
+}
+
 // GetUserUserIdSpaces operation middleware
 func (siw *ServerInterfaceWrapper) GetUserUserIdSpaces(c *gin.Context) {
 
@@ -354,6 +395,32 @@ func (siw *ServerInterfaceWrapper) GetUserUserIdSpaces(c *gin.Context) {
 	}
 
 	siw.Handler.GetUserUserIdSpaces(c, userId)
+}
+
+// PatchUserUserIdSpaces operation middleware
+func (siw *ServerInterfaceWrapper) PatchUserUserIdSpaces(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "user-id" -------------
+	var userId int
+
+	err = runtime.BindStyledParameter("simple", false, "user-id", c.Param("user-id"), &userId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter user-id: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(CookieAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PatchUserUserIdSpaces(c, userId)
 }
 
 // GetUsers operation middleware
@@ -466,7 +533,9 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/user/:user-id", wrapper.DeleteUserUserId)
 	router.GET(options.BaseURL+"/user/:user-id", wrapper.GetUserUserId)
 	router.PUT(options.BaseURL+"/user/:user-id", wrapper.PutUserUserId)
+	router.DELETE(options.BaseURL+"/user/:user-id/space/:space-id", wrapper.DeleteUserUserIdSpaceSpaceId)
 	router.GET(options.BaseURL+"/user/:user-id/spaces", wrapper.GetUserUserIdSpaces)
+	router.PATCH(options.BaseURL+"/user/:user-id/spaces", wrapper.PatchUserUserIdSpaces)
 	router.GET(options.BaseURL+"/users/", wrapper.GetUsers)
 	router.GET(options.BaseURL+"/webhooks/", wrapper.GetWebhooks)
 	router.POST(options.BaseURL+"/webhooks/", wrapper.PostWebhooks)
