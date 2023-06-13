@@ -1,4 +1,4 @@
-package bussniss_logic
+package business_logic
 
 import (
 	"encoding/json"
