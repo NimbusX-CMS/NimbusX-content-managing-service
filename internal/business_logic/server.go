@@ -13,15 +13,6 @@ type Server struct {
 	DB db.DataBase
 }
 
-func (s *Server) DeleteUserUserIdSpaceSpaceId(c *gin.Context, userId int, spaceId int) {
-	c.AbortWithStatus(http.StatusNotImplemented)
-
-}
-
-func (s *Server) PatchUserUserIdSpaces(c *gin.Context, userId int) {
-	c.AbortWithStatus(http.StatusNotImplemented)
-}
-
 func (s *Server) GetLogin(c *gin.Context) {
 	c.AbortWithStatus(http.StatusNotImplemented)
 }
@@ -227,6 +218,21 @@ func (s *Server) getSpaceByID(c *gin.Context, spaceID int) (models.Space, bool) 
 	return spaceFromDB, true
 }
 
+func (s *Server) getSpaceAccessByIDs(c *gin.Context, userID int, spaceID int) (models.SpaceAccess, bool) {
+	spaceAccessFromDB, err := s.DB.GetSpaceAccess(userID, spaceID)
+	if err != nil {
+		fmt.Println("Error getting spaceAccess by id's:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return models.SpaceAccess{}, false
+	}
+	if spaceAccessFromDB == (models.SpaceAccess{}) {
+		fmt.Println("Error spaceAccess with userID and spaceID not found:", userID, spaceID)
+		c.JSON(http.StatusNotFound, gin.H{"error": error_msg.ErrorSpaceAccessWithIdsNotFound})
+		return models.SpaceAccess{}, false
+	}
+	return spaceAccessFromDB, true
+}
+
 func (s *Server) GetUserUserIdSpaces(c *gin.Context, userId int) {
 	_, success := s.getUserByID(c, userId)
 	if !success {
@@ -239,6 +245,39 @@ func (s *Server) GetUserUserIdSpaces(c *gin.Context, userId int) {
 		return
 	}
 	c.JSON(http.StatusOK, spaceAccesses)
+}
+
+func (s *Server) DeleteUserUserIdSpaceSpaceId(c *gin.Context, userId int, spaceId int) {
+	spaceAccess, success := s.getSpaceAccessByIDs(c, userId, spaceId)
+	if success {
+		return
+	}
+
+	err := s.DB.DeleteSpaceAccess(userId, spaceId)
+	if err != nil {
+		fmt.Println("Error deleting space access:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, spaceAccess)
+}
+
+func (s *Server) PatchUserUserIdSpaces(c *gin.Context, userId int) {
+	var spaceAccess models.SpaceAccess
+	if err := c.ShouldBindJSON(&spaceAccess); err != nil {
+		fmt.Println("Error binding spaceAccess JSON:", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	spaceAccess.UserID = userId
+
+	access, err := s.DB.CreateSpaceAccess(spaceAccess)
+	if err != nil {
+		fmt.Println("Error deleting space access:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, access)
 }
 
 func (s *Server) GetWebhooks(c *gin.Context) {
