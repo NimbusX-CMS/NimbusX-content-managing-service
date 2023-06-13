@@ -13,6 +13,15 @@ type Server struct {
 	DB db.DataBase
 }
 
+func (s *Server) DeleteUserUserIdSpaceSpaceId(c *gin.Context, userId int, spaceId int) {
+	c.AbortWithStatus(http.StatusNotImplemented)
+
+}
+
+func (s *Server) PatchUserUserIdSpaces(c *gin.Context, userId int) {
+	c.AbortWithStatus(http.StatusNotImplemented)
+}
+
 func (s *Server) GetLogin(c *gin.Context) {
 	c.AbortWithStatus(http.StatusNotImplemented)
 }
