@@ -187,6 +187,8 @@ func TestServer_DeleteUserUserIdSpaceSpaceId(t *testing.T) {
 			Url:                fmt.Sprintf("/user/%v/space/%v", 123123, 123123),
 			ID:                 123123,
 			ID2:                123123,
+			ResponseModel:      &error_msg.Error{},
+			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorSpaceAccessWithIdsNotFound},
 			ExpectedStatusCode: http.StatusNotFound,
 		},
 	}
@@ -223,6 +225,15 @@ func TestServer_PatchUserUserIdSpaces(t *testing.T) {
 			ResponseModel:      &models.SpaceAccess{},
 			ExpectedBody:       &models.SpaceAccess{UserID: user.ID, SpaceID: space.ID, Admin: true},
 			ExpectedStatusCode: http.StatusOK,
+		},
+		{
+			name:               "Patch SpaceAccess, not exist",
+			Url:                fmt.Sprintf("/user/%v/space", 123123),
+			ID:                 123123,
+			RequestBody:        fmt.Sprintf("{ \"userId\": %v, \"spaceId\": %v, \"admin\": true }", 123123, 123123),
+			ResponseModel:      &error_msg.Error{},
+			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorUserWithIdNotFound},
+			ExpectedStatusCode: http.StatusBadRequest,
 		},
 	}
 

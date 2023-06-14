@@ -249,7 +249,7 @@ func (s *Server) GetUserUserIdSpaces(c *gin.Context, userId int) {
 
 func (s *Server) DeleteUserUserIdSpaceSpaceId(c *gin.Context, userId int, spaceId int) {
 	spaceAccess, success := s.getSpaceAccessByIDs(c, userId, spaceId)
-	if success {
+	if !success {
 		return
 	}
 
@@ -270,10 +270,30 @@ func (s *Server) PatchUserUserIdSpaces(c *gin.Context, userId int) {
 		return
 	}
 	spaceAccess.UserID = userId
-
-	access, err := s.DB.CreateSpaceAccess(spaceAccess)
+	_, success := s.getUserByID(c, userId)
+	if !success {
+		return
+	}
+	getSpaceAccess, err := s.DB.GetSpaceAccess(spaceAccess.UserID, spaceAccess.SpaceID)
 	if err != nil {
-		fmt.Println("Error deleting space access:", err)
+		fmt.Println("Error getting spaceAccess:", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if getSpaceAccess == (models.SpaceAccess{}) {
+		access, err := s.DB.CreateSpaceAccess(spaceAccess)
+		if err != nil {
+			fmt.Println("Error creating spaceAccess:", err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		c.JSON(http.StatusOK, access)
+		return
+	}
+
+	access, err := s.DB.UpdateSpaceAccess(spaceAccess)
+	if err != nil {
+		fmt.Println("Error creating spaceAccess:", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
