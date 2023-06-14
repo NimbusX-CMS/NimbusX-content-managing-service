@@ -1,4 +1,4 @@
-package bussniss_logic
+package business_logic
 
 import (
 	"encoding/json"
@@ -19,6 +19,7 @@ type TestCase struct {
 	name               string
 	Url                string
 	ID                 int
+	ID2                int
 	Str                string
 	RequestBody        string
 	ResponseModel      interface{}
@@ -41,6 +42,7 @@ func (tc TestCases) testStaticUrlCases(t *testing.T, toTest func(ctx *gin.Contex
 		})
 	}
 }
+
 func (tc TestCases) testDynamicIntUrlCases(t *testing.T, toTest func(ctx *gin.Context, id int)) {
 	for _, tt := range tc {
 		t.Run(tt.name, func(t *testing.T) {
@@ -49,6 +51,22 @@ func (tc TestCases) testDynamicIntUrlCases(t *testing.T, toTest func(ctx *gin.Co
 			c.Request.Header.Set("Content-Type", "application/json")
 
 			toTest(c, tt.ID)
+
+			AssertStatusCode(t, w, tt.ExpectedStatusCode)
+
+			AssertBody(t, w, tt.ResponseModel, tt.ExpectedBody)
+		})
+	}
+}
+
+func (tc TestCases) testDynamic2IntUrlCases(t *testing.T, toTest func(ctx *gin.Context, id int, id2 int)) {
+	for _, tt := range tc {
+		t.Run(tt.name, func(t *testing.T) {
+			w, c := setupGinTest()
+			c.Request, _ = http.NewRequest(http.MethodPost, tt.Url, strings.NewReader(tt.RequestBody))
+			c.Request.Header.Set("Content-Type", "application/json")
+
+			toTest(c, tt.ID, tt.ID2)
 
 			AssertStatusCode(t, w, tt.ExpectedStatusCode)
 

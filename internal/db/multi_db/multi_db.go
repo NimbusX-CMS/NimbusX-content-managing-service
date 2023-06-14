@@ -18,7 +18,7 @@ func NewMultiDB(db *gorm.DB) *MultiDB {
 }
 
 func (m *MultiDB) EnsureTablesCreation() error {
-	return m.db.AutoMigrate(&models.User{})
+	return m.db.AutoMigrate(&models.User{}, &models.Language{}, &models.Space{}, &models.SpaceAccess{})
 }
 
 func (m *MultiDB) GetUser(userId int) (models.User, error) {
@@ -79,4 +79,80 @@ func ConnectToSQLite(databasePath string) (*MultiDB, error) {
 		return nil, err
 	}
 	return NewMultiDB(db), nil
+}
+
+func (m *MultiDB) GetSpace(spaceId int) (models.Space, error) {
+	var space models.Space
+	err := m.db.Preload("Languages").Preload("PrimaryLanguage").First(&space, spaceId).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.Space{}, nil
+		}
+		return models.Space{}, err
+	}
+	return space, nil
+}
+
+func (m *MultiDB) GetSpaces() ([]models.Space, error) {
+	var spaces []models.Space
+	err := m.db.Preload("Languages").Preload("PrimaryLanguage").Find(&spaces).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return []models.Space{}, nil
+		}
+		return []models.Space{}, err
+	}
+	return spaces, nil
+}
+
+func (m *MultiDB) CreateSpace(space models.Space) (models.Space, error) {
+	err := m.db.Create(&space).Error
+	return space, err
+}
+
+func (m *MultiDB) UpdateSpace(space models.Space) (models.Space, error) {
+	err := m.db.Save(&space).Error
+	return space, err
+}
+
+func (m *MultiDB) DeleteSpace(spaceId int) error {
+	return m.db.Delete(&models.Space{}, spaceId).Error
+}
+
+func (m *MultiDB) GetSpaceAccess(userId int, spaceId int) (models.SpaceAccess, error) {
+	var spaceAccess models.SpaceAccess
+	err := m.db.Where("user_id = ? AND space_id = ?", userId, spaceId).First(&spaceAccess).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.SpaceAccess{}, nil
+		}
+		return models.SpaceAccess{}, err
+	}
+	return spaceAccess, nil
+}
+
+func (m *MultiDB) GetSpaceAccesses(userId int) ([]models.SpaceAccess, error) {
+	var spaceAccesses []models.SpaceAccess
+	err := m.db.Where("user_id = ?", userId).Find(&spaceAccesses).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return []models.SpaceAccess{}, nil
+		}
+		return []models.SpaceAccess{}, err
+	}
+	return spaceAccesses, nil
+}
+
+func (m *MultiDB) CreateSpaceAccess(spaceAccess models.SpaceAccess) (models.SpaceAccess, error) {
+	err := m.db.Create(&spaceAccess).Error
+	return spaceAccess, err
+}
+
+func (m *MultiDB) UpdateSpaceAccess(spaceAccess models.SpaceAccess) (models.SpaceAccess, error) {
+	err := m.db.Save(&spaceAccess).Error
+	return spaceAccess, err
+}
+
+func (m *MultiDB) DeleteSpaceAccess(userId int, spaceId int) error {
+	return m.db.Delete(&models.SpaceAccess{}, "user_id = ? AND space_id = ?", userId, spaceId).Error
 }

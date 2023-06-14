@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/api"
-	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/bussniss_logic"
+	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/business_logic"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db/multi_db"
 	"github.com/gin-gonic/gin"
 )
@@ -21,7 +21,7 @@ func main() {
 		fmt.Println("Error creating tables:", err)
 		return
 	}
-	server := &bussniss_logic.Server{
+	server := &business_logic.Server{
 		DB: db,
 	}
 
