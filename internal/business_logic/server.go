@@ -210,7 +210,7 @@ func (s *Server) getSpaceByID(c *gin.Context, spaceID int) (models.Space, bool) 
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return models.Space{}, false
 	}
-	if spaceFromDB.ID == 0 {
+	if spaceFromDB.IsEmpty() {
 		fmt.Println("Error space with id not found:", spaceID)
 		c.JSON(http.StatusNotFound, gin.H{"error": error_msg.ErrorSpaceWithIdNotFound})
 		return models.Space{}, false

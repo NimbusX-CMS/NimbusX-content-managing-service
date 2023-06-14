@@ -12,3 +12,14 @@ type Space struct {
 	PrimaryLanguage   Language   `json:"primaryLanguage" gorm:"foreignkey:PrimaryLanguageID"`
 	Languages         []Language `json:"languages" gorm:"many2many:space_languages;"`
 }
+
+func (s Space) IsEmpty() bool {
+	return s.ID == 0 &&
+		s.Name == "" &&
+		s.Color1 == "" &&
+		s.Color2 == "" &&
+		s.Color3 == "" &&
+		s.Color4 == "" &&
+		s.ImageUrl == "" &&
+		s.PrimaryLanguageID == 0
+}
