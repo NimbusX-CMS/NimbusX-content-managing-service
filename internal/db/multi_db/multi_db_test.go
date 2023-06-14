@@ -309,11 +309,11 @@ func TestMultiDB_GetSpaces(t *testing.T) {
 			Color4:   "#00FF00",
 			ImageUrl: "https://example.com/image1.jpg",
 			PrimaryLanguage: models.Language{
-				Name: "English",
+				Name: "en-EN",
 			},
 			Languages: []models.Language{
 				{
-					Name: "German",
+					Name: "de-DE",
 				},
 			},
 		},
@@ -325,14 +325,14 @@ func TestMultiDB_GetSpaces(t *testing.T) {
 			Color4:   "#FF0000",
 			ImageUrl: "https://example.com/image2.jpg",
 			PrimaryLanguage: models.Language{
-				Name: "French",
+				Name: "es-ES",
 			},
 			Languages: []models.Language{
 				{
-					Name: "Spanish",
+					Name: "es-ES",
 				},
 				{
-					Name: "Italian",
+					Name: "it-IT",
 				},
 			},
 		},
@@ -393,14 +393,14 @@ func TestMultiDB_CreateSpace(t *testing.T) {
 				Color4:   "#00FF00",
 				ImageUrl: "https://example.com/new-image.jpg",
 				PrimaryLanguage: models.Language{
-					Name: "English",
+					Name: "en-EN",
 				},
 				Languages: []models.Language{
 					{
-						Name: "German",
+						Name: "de-DE",
 					},
 					{
-						Name: "French",
+						Name: "fr-FR",
 					},
 				},
 			},
@@ -444,11 +444,11 @@ func TestMultiDB_UpdateSpace(t *testing.T) {
 				Color4:   "#00FF00",
 				ImageUrl: "https://example.com/old-image.jpg",
 				PrimaryLanguage: models.Language{
-					Name: "English",
+					Name: "en-EN",
 				},
 				Languages: []models.Language{
 					{
-						Name: "German",
+						Name: "de-DE",
 					},
 				},
 			},
@@ -460,14 +460,14 @@ func TestMultiDB_UpdateSpace(t *testing.T) {
 				Color4:   "#FF0000",
 				ImageUrl: "https://example.com/updated-image.jpg",
 				PrimaryLanguage: models.Language{
-					Name: "French",
+					Name: "fr-FR",
 				},
 				Languages: []models.Language{
 					{
-						Name: "Spanish",
+						Name: "es-ES",
 					},
 					{
-						Name: "Italian",
+						Name: "it-IT",
 					},
 				},
 			},
@@ -518,11 +518,11 @@ func TestMultiDB_DeleteSpace(t *testing.T) {
 				Color4:   "#00FF00",
 				ImageUrl: "https://example.com/delete-image.jpg",
 				PrimaryLanguage: models.Language{
-					Name: "English",
+					Name: "en-EN",
 				},
 				Languages: []models.Language{
 					{
-						Name: "German",
+						Name: "de-DE",
 					},
 				},
 			},
