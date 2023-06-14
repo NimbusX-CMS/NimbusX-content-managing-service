@@ -109,6 +109,8 @@ paths:
                 $ref: '#/components/schemas/User'
         '400':
           description: Issue with your Request.
+        '404':
+          description: Entry not found.
           content:
             application/json:
               schema:
@@ -140,6 +142,8 @@ paths:
                 $ref: '#/components/schemas/User'
         '400':
           description: Issue with your Request.
+        '404':
+          description: Entry not found.
           content:
             application/json:
               schema:
@@ -167,6 +171,8 @@ paths:
                 $ref: '#/components/schemas/User'
         '400':
           description: Issue with your Request.
+        '404':
+          description: Entry not found.
           content:
             application/json:
               schema:
@@ -185,6 +191,8 @@ paths:
           description: User deleted
         '400':
           description: Issue with your Request.
+        '404':
+          description: Entry not found.
           content:
             application/json:
               schema:
@@ -218,6 +226,8 @@ paths:
                   $ref: '#/components/schemas/SpaceAccess'
         '400':
           description: Issue with your Request.
+        '404':
+          description: Entry not found.
           content:
             application/json:
               schema:
@@ -245,6 +255,8 @@ paths:
                 $ref: '#/components/schemas/SpaceAccess'
         '400':
           description: Issue with your Request.
+        '404':
+          description: Entry not found.
           content:
             application/json:
               schema:
@@ -282,6 +294,8 @@ paths:
                 $ref: '#/components/schemas/SpaceAccess'
         '400':
           description: Issue with your Request.
+        '404':
+          description: Entry not found.
           content:
             application/json:
               schema:
@@ -340,8 +354,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Space'
-        '404':
+        '400':
           description: Issue with your Request.
+        '404':
+          description: Entry not found.
           content:
             application/json:
               schema:
@@ -368,8 +384,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Space'
-        '404':
+        '400':
           description: Issue with your Request.
+        '404':
+          description: Entry not found.
           content:
             application/json:
               schema:
@@ -386,8 +404,10 @@ paths:
       responses:
         '200':
           description: Space deleted
-        '404':
+        '400':
           description: Issue with your Request.
+        '404':
+          description: Entry not found.
           content:
             application/json:
               schema:
