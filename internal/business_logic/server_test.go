@@ -153,7 +153,7 @@ func TestServer_GetUserUserIdSpaces(t *testing.T) {
 			ID:                 123123,
 			ResponseModel:      &error_msg.Error{},
 			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorUserWithIdNotFound},
-			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedStatusCode: http.StatusNotFound,
 		},
 	}
 	tests.testDynamicIntUrlCases(t, server.GetUserUserIdSpaces)
@@ -233,7 +233,7 @@ func TestServer_PatchUserUserIdSpaces(t *testing.T) {
 			RequestBody:        fmt.Sprintf("{ \"userId\": %v, \"spaceId\": %v, \"admin\": true }", 123123, 123123),
 			ResponseModel:      &error_msg.Error{},
 			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorUserWithIdNotFound},
-			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedStatusCode: http.StatusNotFound,
 		},
 	}
 
@@ -290,7 +290,7 @@ func TestServer_DeleteUserUserId(t *testing.T) {
 			name:               "Delete user",
 			Url:                fmt.Sprintf("/user/%v", 12312),
 			ID:                 12312,
-			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedStatusCode: http.StatusNotFound,
 		},
 	}
 
@@ -318,7 +318,7 @@ func TestServer_GetUserUserId(t *testing.T) {
 			ID:                 1234124,
 			ResponseModel:      &error_msg.Error{},
 			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorUserWithIdNotFound},
-			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedStatusCode: http.StatusNotFound,
 		},
 	}
 
@@ -394,7 +394,7 @@ func TestServer_PutUserUserId(t *testing.T) {
 			RequestBody:        `{"id": 2, "name": "John Doe", "email": "a@example.com"}`,
 			ResponseModel:      &error_msg.Error{},
 			ExpectedBody:       &error_msg.Error{Error: error_msg.ErrorUserWithIdNotFound},
-			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedStatusCode: http.StatusNotFound,
 		},
 	}
 
