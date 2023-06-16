@@ -29,7 +29,7 @@ func (s *Server) PostSpace(c *gin.Context) {
 	var space models.Space
 	if err := c.ShouldBindJSON(&space); err != nil {
 		fmt.Println("Error binding space JSON:", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, error_msg.Error{Error: err.Error()})
 		return
 	}
 
@@ -71,7 +71,7 @@ func (s *Server) PutSpaceSpaceId(c *gin.Context, spaceId int) {
 	var space models.Space
 	if err := c.ShouldBindJSON(&space); err != nil {
 		fmt.Println("Error binding space JSON:", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, error_msg.Error{Error: err.Error()})
 		return
 	}
 
@@ -105,7 +105,7 @@ func (s *Server) PostUser(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		fmt.Println("Error binding user JSON:", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, error_msg.Error{Error: err.Error()})
 		return
 	}
 	userByEmail, err := s.DB.GetUserByEmail(user.Email)
@@ -117,7 +117,7 @@ func (s *Server) PostUser(c *gin.Context) {
 
 	if userByEmail != (models.User{}) {
 		fmt.Println("Error email already in use:", userByEmail)
-		c.JSON(http.StatusBadRequest, gin.H{"error": error_msg.ErrorEmailAlreadyInUse})
+		c.JSON(http.StatusBadRequest, error_msg.Error{Error: error_msg.ErrorEmailAlreadyInUse})
 		return
 	}
 
@@ -159,7 +159,7 @@ func (s *Server) PutUserUserId(c *gin.Context, userId int) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		fmt.Println("Error binding user JSON:", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, error_msg.Error{Error: err.Error()})
 		return
 	}
 	user.ID = userId
@@ -197,7 +197,7 @@ func (s *Server) getUserByID(c *gin.Context, userId int) (models.User, bool) {
 	}
 	if userFromDB == (models.User{}) {
 		fmt.Println("Error user with id not found:", userId)
-		c.JSON(http.StatusBadRequest, gin.H{"error": error_msg.ErrorUserWithIdNotFound})
+		c.JSON(http.StatusNotFound, error_msg.Error{Error: error_msg.ErrorUserWithIdNotFound})
 		return models.User{}, false
 	}
 	return userFromDB, true
@@ -210,9 +210,9 @@ func (s *Server) getSpaceByID(c *gin.Context, spaceID int) (models.Space, bool) 
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return models.Space{}, false
 	}
-	if spaceFromDB.ID == 0 {
+	if spaceFromDB.IsEmpty() {
 		fmt.Println("Error space with id not found:", spaceID)
-		c.JSON(http.StatusNotFound, gin.H{"error": error_msg.ErrorSpaceWithIdNotFound})
+		c.JSON(http.StatusNotFound, error_msg.Error{Error: error_msg.ErrorSpaceWithIdNotFound})
 		return models.Space{}, false
 	}
 	return spaceFromDB, true
@@ -227,7 +227,7 @@ func (s *Server) getSpaceAccessByIDs(c *gin.Context, userID int, spaceID int) (m
 	}
 	if spaceAccessFromDB == (models.SpaceAccess{}) {
 		fmt.Println("Error spaceAccess with userID and spaceID not found:", userID, spaceID)
-		c.JSON(http.StatusNotFound, gin.H{"error": error_msg.ErrorSpaceAccessWithIdsNotFound})
+		c.JSON(http.StatusNotFound, error_msg.Error{Error: error_msg.ErrorSpaceAccessWithIdsNotFound})
 		return models.SpaceAccess{}, false
 	}
 	return spaceAccessFromDB, true
@@ -266,7 +266,7 @@ func (s *Server) PatchUserUserIdSpaces(c *gin.Context, userId int) {
 	var spaceAccess models.SpaceAccess
 	if err := c.ShouldBindJSON(&spaceAccess); err != nil {
 		fmt.Println("Error binding spaceAccess JSON:", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, error_msg.Error{Error: err.Error()})
 		return
 	}
 	spaceAccess.UserID = userId
