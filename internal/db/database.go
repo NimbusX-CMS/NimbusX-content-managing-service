@@ -5,11 +5,11 @@ import "github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/models"
 type DataBase interface {
 	EnsureTablesCreation() error
 
-	GetSessionCookiesByUserId(userId int) ([]models.SessionCookie, error)
-	CreateSessionCookie(cookie models.SessionCookie) (models.SessionCookie, error)
-	UpdateSessionCookie(cookie models.SessionCookie) (models.SessionCookie, error)
+	GetSessionCookieByValue(cookieValue string) (models.Session, error)
+	GetSessionCookiesByUserId(userId int) ([]models.Session, error)
+	CreateSessionCookie(cookie models.Session) (models.Session, error)
+	UpdateSessionCookie(cookie models.Session) (models.Session, error)
 	DeleteSessionCookie(cookieId int) error
-	IsSessionCookieFromUser(cookieValue string, userId int) bool
 
 	GetUser(userId int) (models.User, error)
 	GetUserByEmail(email string) (models.User, error)

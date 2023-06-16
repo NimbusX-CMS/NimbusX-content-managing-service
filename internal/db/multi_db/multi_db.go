@@ -21,6 +21,44 @@ func (m *MultiDB) EnsureTablesCreation() error {
 	return m.db.AutoMigrate(&models.User{}, &models.Language{}, &models.Space{}, &models.SpaceAccess{})
 }
 
+func (m *MultiDB) GetSessionCookieByValue(cookieValue string) (models.Session, error) {
+	var session models.Session
+	err := m.db.Where("cookieValue = ?", cookieValue).First(&session).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return models.Session{}, nil
+		}
+		return models.Session{}, err
+	}
+	return session, nil
+}
+
+func (m *MultiDB) GetSessionCookiesByUserId(userId int) ([]models.Session, error) {
+	var session []models.Session
+	err := m.db.Find(&session, "userId = ?", userId).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return []models.Session{}, nil
+		}
+		return []models.Session{}, err
+	}
+	return session, nil
+}
+
+func (m *MultiDB) CreateSessionCookie(session models.Session) (models.Session, error) {
+	err := m.db.Create(&session).Error
+	return session, err
+}
+
+func (m *MultiDB) UpdateSessionCookie(session models.Session) (models.Session, error) {
+	err := m.db.Save(&session).Error
+	return session, err
+}
+
+func (m *MultiDB) DeleteSessionCookie(sessionId int) error {
+	return m.db.Delete(&models.Session{}, sessionId).Error
+}
+
 func (m *MultiDB) GetUser(userId int) (models.User, error) {
 	var user models.User
 	err := m.db.First(&user, userId).Error
