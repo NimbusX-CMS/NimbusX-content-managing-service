@@ -23,7 +23,7 @@ func (m *MultiDB) EnsureTablesCreation() error {
 
 func (m *MultiDB) GetSessionCookieByValue(cookieValue string) (models.Session, error) {
 	var session models.Session
-	err := m.db.Where("cookie_value  = ?", cookieValue).First(&session).Error
+	err := m.db.Preload("User").Where("cookie_value  = ?", cookieValue).First(&session).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return models.Session{}, nil
@@ -35,7 +35,7 @@ func (m *MultiDB) GetSessionCookieByValue(cookieValue string) (models.Session, e
 
 func (m *MultiDB) GetSessionCookiesByUserId(userId int) ([]models.Session, error) {
 	var session []models.Session
-	err := m.db.Find(&session, "user_id = ?", userId).Error
+	err := m.db.Preload("User").Find(&session, "user_id = ?", userId).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return []models.Session{}, nil

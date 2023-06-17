@@ -89,10 +89,16 @@ func TestMultiDB_GetSessionCookiesByUserId(t *testing.T) {
 		expectedError    error
 	}{
 		{
-			name:             "Existing User",
-			userID:           createdUser.ID,
-			expectedSessions: []models.Session{{ID: 1, CookieValue: "abc123", UserID: createdUser.ID}},
-			expectedError:    nil,
+			name:   "Existing User",
+			userID: createdUser.ID,
+			expectedSessions: []models.Session{
+				{
+					ID: 1, CookieValue: "abc123",
+					UserID: createdUser.ID,
+					User:   models.User{ID: 1, Name: "John Doe", Email: "john@example.com", InstanceAdmin: false, Origin: false},
+				},
+			},
+			expectedError: nil,
 		},
 		{
 			name:             "Non-Existing User",

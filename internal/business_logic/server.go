@@ -2,6 +2,7 @@ package business_logic
 
 import (
 	"fmt"
+	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/auth"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/error_msg"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/models"
@@ -10,15 +11,30 @@ import (
 )
 
 type Server struct {
-	DB db.DataBase
+	DB   db.DataBase
+	Auth auth.Auth
 }
 
 func (s *Server) GetLogin(c *gin.Context) {
-	c.AbortWithStatus(http.StatusNotImplemented)
+	success, session := s.Auth.GetSession(c)
+	if !success {
+		return
+	}
+	fmt.Println("session:", session)
+	c.JSON(http.StatusOK, session.User)
 }
 
 func (s *Server) PostLogin(c *gin.Context) {
-	c.AbortWithStatus(http.StatusNotImplemented)
+	var emailAndPassword models.EmailAndPassword
+	if err := c.ShouldBindJSON(&emailAndPassword); err != nil {
+		fmt.Println("Error binding emailAndPassword JSON:", err)
+		c.JSON(http.StatusBadRequest, error_msg.Error{Error: err.Error()})
+		return
+	}
+
+	if s.Auth.WriteNewCookie(c, emailAndPassword) {
+		c.String(http.StatusOK, "Cookie set")
+	}
 }
 
 func (s *Server) PostPasswordToken(c *gin.Context, token string) {

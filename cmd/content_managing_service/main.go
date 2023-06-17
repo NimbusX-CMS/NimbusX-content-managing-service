@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/api"
+	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/auth"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/business_logic"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db/multi_db"
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,8 @@ func main() {
 		return
 	}
 	server := &business_logic.Server{
-		DB: db,
+		DB:   db,
+		Auth: auth.Auth{DB: db},
 	}
 
 	api.RegisterHandlers(router, server)
