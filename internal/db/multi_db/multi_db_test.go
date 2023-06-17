@@ -25,6 +25,205 @@ func setupTestDB() (*MultiDB, func()) {
 	}
 }
 
+func TestMultiDB_GetSessionCookieByValue(t *testing.T) {
+	multiDB, teardown := setupTestDB()
+	defer teardown()
+
+	cookie := models.Session{
+		CookieValue: "abc123",
+	}
+
+	createdCookie, _ := multiDB.CreateSessionCookie(cookie)
+
+	tests := []struct {
+		name            string
+		cookieValue     string
+		expectedSession models.Session
+		expectedError   error
+	}{
+		{
+			name:            "Existing Session",
+			cookieValue:     createdCookie.CookieValue,
+			expectedSession: models.Session{ID: createdCookie.ID, CookieValue: "abc123"},
+			expectedError:   nil,
+		},
+		{
+			name:            "Non-Existing Session",
+			cookieValue:     "invalid",
+			expectedSession: models.Session{},
+			expectedError:   nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			resultSession, err := multiDB.GetSessionCookieByValue(test.cookieValue)
+			assert.Equal(t, test.expectedSession, resultSession)
+			assert.Equal(t, test.expectedError, err)
+		})
+	}
+}
+
+func TestMultiDB_GetSessionCookiesByUserId(t *testing.T) {
+	multiDB, teardown := setupTestDB()
+	defer teardown()
+
+	user := models.User{
+		Name:  "John Doe",
+		Email: "john@example.com",
+	}
+
+	createdUser, _ := multiDB.CreateUser(user)
+
+	cookie := models.Session{
+		CookieValue: "abc123",
+		UserID:      createdUser.ID,
+	}
+
+	_, _ = multiDB.CreateSessionCookie(cookie)
+
+	tests := []struct {
+		name             string
+		userID           int
+		expectedSessions []models.Session
+		expectedError    error
+	}{
+		{
+			name:             "Existing User",
+			userID:           createdUser.ID,
+			expectedSessions: []models.Session{{ID: 1, CookieValue: "abc123", UserID: createdUser.ID}},
+			expectedError:    nil,
+		},
+		{
+			name:             "Non-Existing User",
+			userID:           1234,
+			expectedSessions: []models.Session{},
+			expectedError:    nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			resultSessions, err := multiDB.GetSessionCookiesByUserId(test.userID)
+			assert.Equal(t, test.expectedSessions, resultSessions)
+			assert.Equal(t, test.expectedError, err)
+		})
+	}
+}
+
+func TestMultiDB_CreateSessionCookie(t *testing.T) {
+	tests := []struct {
+		name      string
+		cookie    models.Session
+		expected  models.Session
+		expectErr bool
+	}{
+		{
+			name: "Create session cookie successfully",
+			cookie: models.Session{
+				ID:          1,
+				CookieValue: "abc123",
+			},
+			expected:  models.Session{ID: 1, CookieValue: "abc123"},
+			expectErr: false,
+		},
+	}
+
+	multiDB, teardown := setupTestDB()
+	defer teardown()
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			createdCookie, err := multiDB.CreateSessionCookie(test.cookie)
+			if test.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, test.expected, createdCookie)
+		})
+	}
+}
+
+func TestMultiDB_UpdateSessionCookie(t *testing.T) {
+	tests := []struct {
+		name          string
+		initialCookie models.Session
+		updatedCookie models.Session
+		expected      models.Session
+		expectErr     bool
+	}{
+		{
+			name: "Update session cookie successfully",
+			initialCookie: models.Session{
+				CookieValue: "abc123",
+			},
+			updatedCookie: models.Session{
+				CookieValue: "def456",
+			},
+			expected:  models.Session{ID: 2, CookieValue: "def456"},
+			expectErr: false,
+		},
+	}
+
+	multiDB, teardown := setupTestDB()
+	defer teardown()
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := multiDB.CreateSessionCookie(test.initialCookie)
+			if err != nil {
+				t.Fatal("Error creating session cookie: ", err)
+			}
+
+			updatedSession, err := multiDB.UpdateSessionCookie(test.updatedCookie)
+			if test.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, test.expected, updatedSession)
+		})
+	}
+}
+
+func TestMultiDB_DeleteSessionCookie(t *testing.T) {
+	tests := []struct {
+		name           string
+		cookie         models.Session
+		expectNotFound bool
+	}{
+		{
+			name: "Delete session cookie successfully",
+			cookie: models.Session{
+				CookieValue: "abc123",
+			},
+			expectNotFound: true,
+		},
+	}
+
+	multiDB, teardown := setupTestDB()
+	defer teardown()
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			createdCookie, _ := multiDB.CreateSessionCookie(test.cookie)
+
+			err := multiDB.DeleteSessionCookie(createdCookie.ID)
+			assert.NoError(t, err)
+
+			deletedCookie, err := multiDB.GetSessionCookieByValue(createdCookie.CookieValue)
+			assert.NoError(t, err)
+
+			if test.expectNotFound {
+				assert.Equal(t, models.Session{}, deletedCookie)
+			} else {
+				assert.NotEqual(t, models.Session{}, deletedCookie)
+			}
+		})
+	}
+}
+
 func TestMultiDB_GetUser(t *testing.T) {
 	multiDB, teardown := setupTestDB()
 	defer teardown()
