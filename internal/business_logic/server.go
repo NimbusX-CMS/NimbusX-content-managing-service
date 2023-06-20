@@ -32,8 +32,8 @@ func (s *Server) PostLogin(c *gin.Context) {
 		return
 	}
 
-	if s.Auth.WriteNewCookie(c, emailAndPassword) {
-		c.String(http.StatusOK, "Cookie set")
+	if success, cookie := s.Auth.WriteNewCookie(c, emailAndPassword); success {
+		c.JSON(http.StatusOK, models.CookieValueOnly{CookieValue: cookie.CookieValue})
 	}
 }
 

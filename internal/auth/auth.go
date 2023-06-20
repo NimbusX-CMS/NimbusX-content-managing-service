@@ -10,23 +10,23 @@ import (
 	"time"
 )
 
-const sessionCookieName = "sessionCookie"
-const domain = "localhost"
+const sessionCookieName = "session"
+const domain = ""
 
 type Auth struct {
 	DB db.DataBase
 }
 
-func (a Auth) WriteNewCookie(c *gin.Context, emailAndPassword models.EmailAndPassword) bool {
+func (a Auth) WriteNewCookie(c *gin.Context, emailAndPassword models.EmailAndPassword) (bool, models.Session) {
 	user, err := a.DB.GetUserByEmail(emailAndPassword.Email)
 	if err != nil {
 		fmt.Println("Error getting user by email:", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
-		return false
+		return false, models.Session{}
 	}
 	if user == (models.User{}) {
 		c.JSON(http.StatusNotFound, error_msg.Error{Error: error_msg.ErrorUserWithEmailNotFound})
-		return false
+		return false, models.Session{}
 	}
 	cookie := models.Session{
 		UserID:      user.ID,
@@ -37,10 +37,10 @@ func (a Auth) WriteNewCookie(c *gin.Context, emailAndPassword models.EmailAndPas
 	if err != nil {
 		fmt.Println("Error creating session cookie:", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
-		return false
+		return false, models.Session{}
 	}
 	c.SetCookie(sessionCookieName, cookie.CookieValue, 60*60*24*30, "", domain, false, true)
-	return true
+	return true, cookie
 }
 
 func (a Auth) GetSpacePermission(c *gin.Context, spaceId int) (access bool, admin bool) {

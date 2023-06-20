@@ -7,3 +7,7 @@ type Session struct {
 	CookieValue string `json:"value"`
 	ValidUntil  int64  `json:"valid_until"`
 }
+
+type CookieValueOnly struct {
+	CookieValue string `json:"session"`
+}
