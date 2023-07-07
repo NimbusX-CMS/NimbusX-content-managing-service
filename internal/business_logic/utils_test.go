@@ -3,14 +3,16 @@ package business_logic
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db/multi_db"
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db/multi_db"
+	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/models"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 type TestCases []TestCase
@@ -101,6 +103,11 @@ func setupServer(t *testing.T) *Server {
 	if err != nil {
 		fmt.Println("Error creating tables:", err)
 		t.Error("Error connecting to database:", err)
+	}
+	_, err = testDB.CreateUser(models.User{})
+	if err != nil {
+		fmt.Println("Error Creating User")
+		t.Error("Error Creating User")
 	}
 	return &Server{DB: testDB}
 }

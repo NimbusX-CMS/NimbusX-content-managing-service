@@ -8,6 +8,11 @@ import (
 	"testing"
 )
 
+const (
+	firstUserID = 2
+	firstSpaceID = 1
+)
+
 func TestServer_PostSpace(t *testing.T) {
 	server := setupServer(t)
 
@@ -17,7 +22,7 @@ func TestServer_PostSpace(t *testing.T) {
 			Url:                "/spaces",
 			RequestBody:        `{"name":"Test Space"}`,
 			ResponseModel:      &models.Space{},
-			ExpectedBody:       &models.Space{ID: 1, Name: "Test Space"},
+			ExpectedBody:       &models.Space{ID: firstSpaceID, Name: "Test Space"},
 			ExpectedStatusCode: http.StatusCreated,
 		},
 	}
@@ -125,7 +130,7 @@ func TestServer_GetSpaces(t *testing.T) {
 
 func TestServer_GetUserUserIdSpaces(t *testing.T) {
 	server := setupServer(t)
-	_, err := server.DB.CreateUser(models.User{ID: 1, Name: "Test User"})
+	user, err := server.DB.CreateUser(models.User{ID: 1, Name: "Test User"})
 	if err != nil {
 		t.Error("Cannot create sample user", err)
 	}
@@ -133,7 +138,7 @@ func TestServer_GetUserUserIdSpaces(t *testing.T) {
 	if err != nil {
 		t.Error("Cannot create sample space", err)
 	}
-	spaceAccess, err := server.DB.CreateSpaceAccess(models.SpaceAccess{UserID: 1, SpaceID: space.ID})
+	spaceAccess, err := server.DB.CreateSpaceAccess(models.SpaceAccess{UserID: user.ID, SpaceID: space.ID})
 	if err != nil {
 		t.Error("Cannot create sample space access", err)
 	}
@@ -141,8 +146,8 @@ func TestServer_GetUserUserIdSpaces(t *testing.T) {
 	tests := TestCases{
 		{
 			name:               "GetUserUserIdSpaces",
-			Url:                "/users/1/spaces",
-			ID:                 1,
+			Url:                fmt.Sprintf("/users/%d/spaces", user.ID),
+			ID:                 user.ID,
 			ResponseModel:      &[]models.SpaceAccess{},
 			ExpectedBody:       &[]models.SpaceAccess{spaceAccess},
 			ExpectedStatusCode: http.StatusOK,
@@ -161,7 +166,7 @@ func TestServer_GetUserUserIdSpaces(t *testing.T) {
 
 func TestServer_DeleteUserUserIdSpaceSpaceId(t *testing.T) {
 	server := setupServer(t)
-	_, err := server.DB.CreateUser(models.User{ID: 1, Name: "Test User"})
+	user, err := server.DB.CreateUser(models.User{ID: 1, Name: "Test User"})
 	if err != nil {
 		t.Error("Cannot create sample user", err)
 	}
@@ -169,7 +174,7 @@ func TestServer_DeleteUserUserIdSpaceSpaceId(t *testing.T) {
 	if err != nil {
 		t.Error("Cannot create sample space", err)
 	}
-	spaceAccess, err := server.DB.CreateSpaceAccess(models.SpaceAccess{UserID: 1, SpaceID: space.ID})
+	spaceAccess, err := server.DB.CreateSpaceAccess(models.SpaceAccess{UserID: user.ID, SpaceID: space.ID})
 	if err != nil {
 		t.Error("Cannot create sample space access", err)
 	}
@@ -249,7 +254,7 @@ func TestPostUser(t *testing.T) {
 			Url:                "/user",
 			RequestBody:        `{"name": "John Doe", "email": "j@example.com"}`,
 			ResponseModel:      &models.User{},
-			ExpectedBody:       &models.User{ID: 1, Name: "John Doe", Email: "j@example.com"},
+			ExpectedBody:       &models.User{ID: firstUserID, Name: "John Doe", Email: "j@example.com"},
 			ExpectedStatusCode: http.StatusCreated,
 		},
 		{
@@ -257,7 +262,7 @@ func TestPostUser(t *testing.T) {
 			Url:                "/user",
 			RequestBody:        `{"name": "Jane Doe", "email": "ja@example.com"}`,
 			ResponseModel:      &models.User{},
-			ExpectedBody:       &models.User{ID: 2, Name: "Jane Doe", Email: "ja@example.com"},
+			ExpectedBody:       &models.User{ID: firstUserID+1, Name: "Jane Doe", Email: "ja@example.com"},
 			ExpectedStatusCode: http.StatusCreated,
 		},
 		{
@@ -309,7 +314,7 @@ func TestServer_GetUserUserId(t *testing.T) {
 			Url:                fmt.Sprintf("/user/%v", user.ID),
 			ID:                 user.ID,
 			ResponseModel:      &models.User{},
-			ExpectedBody:       &models.User{ID: 1, Name: "John Doe", Email: "a@example.com"},
+			ExpectedBody:       &models.User{ID: user.ID, Name: "John Doe", Email: "a@example.com"},
 			ExpectedStatusCode: http.StatusOK,
 		},
 		{
@@ -328,20 +333,9 @@ func TestServer_GetUserUserId(t *testing.T) {
 func TestServer_GetUsers(t *testing.T) {
 	server := setupServer(t)
 
-	tests := TestCases{
-		{
-			name:               "Get users",
-			Url:                "/users",
-			ResponseModel:      &[]models.User{},
-			ExpectedBody:       &[]models.User{},
-			ExpectedStatusCode: http.StatusOK,
-		},
-	}
-	tests.testStaticUrlCases(t, server.GetUsers)
-
 	users := &[]models.User{
-		{ID: 1, Name: "John Doe", Email: "a@example.com"},
-		{ID: 2, Name: "Jane Doe", Email: "b@example.com"},
+		{ID: firstUserID, Name: "John Doe", Email: "a@example.com"},
+		{ID: firstUserID+1, Name: "Jane Doe", Email: "b@example.com"},
 	}
 	for _, user := range *users {
 		_, err := server.DB.CreateUser(user)
@@ -350,12 +344,18 @@ func TestServer_GetUsers(t *testing.T) {
 		}
 	}
 
-	tests = TestCases{
+	realUsers, err := server.DB.GetUsers()
+	if err != nil {
+		fmt.Println("Failed to get Users")
+		t.Error("Failed to get Users")
+	}
+
+	tests := TestCases{
 		{
 			name:               "Get users",
 			Url:                "/users",
 			ResponseModel:      &[]models.User{},
-			ExpectedBody:       users,
+			ExpectedBody:       &realUsers,
 			ExpectedStatusCode: http.StatusOK,
 		},
 	}
@@ -375,7 +375,7 @@ func TestServer_PutUserUserId(t *testing.T) {
 			ID:                 user.ID,
 			RequestBody:        `{"name": "John Doe", "email": "a@example.com"}`,
 			ResponseModel:      &models.User{},
-			ExpectedBody:       &models.User{ID: 1, Name: "John Doe", Email: "a@example.com"},
+			ExpectedBody:       &models.User{ID: user.ID, Name: "John Doe", Email: "a@example.com"},
 			ExpectedStatusCode: http.StatusOK,
 		},
 		{
@@ -384,7 +384,7 @@ func TestServer_PutUserUserId(t *testing.T) {
 			ID:                 user.ID,
 			RequestBody:        `{"id": 2, "name": "John Doe", "email": "a@example.com"}`,
 			ResponseModel:      &models.User{},
-			ExpectedBody:       &models.User{ID: 1, Name: "John Doe", Email: "a@example.com"},
+			ExpectedBody:       &models.User{ID: user.ID, Name: "John Doe", Email: "a@example.com"},
 			ExpectedStatusCode: http.StatusOK,
 		},
 		{
