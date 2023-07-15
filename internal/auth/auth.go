@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-const sessionCookieName = "session"
-const domain = ""
+const SessionCookieName = "session"
+const Domain = ""
 
 type Auth struct {
 	DB db.DataBase
@@ -39,7 +39,7 @@ func (a Auth) WriteNewCookie(c *gin.Context, emailAndPassword models.EmailAndPas
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return false, models.Session{}
 	}
-	c.SetCookie(sessionCookieName, cookie.CookieValue, 60*60*24*30, "", domain, false, true)
+	c.SetCookie(SessionCookieName, cookie.CookieValue, 60*60*24*30, "", Domain, false, true)
 	return true, cookie
 }
 
@@ -71,7 +71,7 @@ func (a Auth) GetOriginPermission(c *gin.Context) bool {
 }
 
 func (a Auth) GetSession(c *gin.Context) (bool, models.Session) {
-	cookie, err := c.Request.Cookie(sessionCookieName)
+	cookie, err := c.Request.Cookie(SessionCookieName)
 	if err != nil {
 		fmt.Println("Error getting cookie:", err)
 		c.JSON(http.StatusUnauthorized, error_msg.Error{Error: error_msg.ErrorUnauthorizedNoSessionCookie})

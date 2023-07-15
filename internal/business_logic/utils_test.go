@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/auth"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/db/multi_db"
 	"github.com/NimbusX-CMS/NimbusX-content-managing-service/internal/models"
 	"github.com/gin-gonic/gin"
@@ -27,12 +28,14 @@ type TestCase struct {
 	ResponseModel      interface{}
 	ExpectedBody       interface{}
 	ExpectedStatusCode int
+	SessionCookie      string
 }
 
 func (tc TestCases) testStaticUrlCases(t *testing.T, toTest func(ctx *gin.Context)) {
 	for _, tt := range tc {
 		t.Run(tt.name, func(t *testing.T) {
 			w, c := setupGinTest()
+			c.SetCookie(auth.SessionCookieName, tt.SessionCookie, 60*60*24*30, "", auth.Domain, false, true)
 			c.Request, _ = http.NewRequest(http.MethodPost, tt.Url, strings.NewReader(tt.RequestBody))
 			c.Request.Header.Set("Content-Type", "application/json")
 

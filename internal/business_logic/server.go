@@ -108,6 +108,11 @@ func (s *Server) PutSpaceSpaceId(c *gin.Context, spaceId int) {
 }
 
 func (s *Server) GetSpaces(c *gin.Context) {
+	success, session := s.Auth.GetSession(c)
+	if !success {
+		return
+	}
+	fmt.Println(session)
 	spaces, err := s.DB.GetSpaces()
 	if err != nil {
 		fmt.Println("Error getting spaces:", err)
